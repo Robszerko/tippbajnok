@@ -41,6 +41,29 @@
             padding: 25px;
             box-shadow: 0 0 40px rgba(90, 185, 234, 0.4);
             border: 4px solid var(--panel-border);
+            position: relative; /* Pozícionáláshoz */
+        }
+
+        /* === ÚJ: Notifikációs sáv === */
+        #notification-bar {
+            position: absolute;
+            top: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 196, 0, 0.9);
+            color: #022b4e;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-family: var(--font-display);
+            font-size: 1.4em;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.5s, top 0.5s;
+            pointer-events: none; /* Ne lehessen rákattintani */
+        }
+        #notification-bar.show {
+            top: 90px;
+            opacity: 1;
         }
         
         /* Kezdőképernyő */
@@ -65,18 +88,21 @@
         #score-box h2 { margin: 0; font-family: var(--font-display); font-size: 1.5em; color: var(--gold-text); text-transform: uppercase; }
         #score { font-size: 3em; font-weight: 700; color: var(--gold-text); line-height: 1; }
         
-        #strikes { display: flex; gap: 15px; margin-top: 15px; justify-content: center; }
+        #strikes { display: flex; gap: 15px; margin-top: 15px; justify-content: center; scroll-margin-top: 20px; }
         .strike-x { font-size: 4em; font-family: var(--font-display); color: var(--strike-red); text-shadow: 0 0 10px #ff0000; opacity: 0.2; transition: opacity 0.3s ease; }
         .strike-x.visible { opacity: 1; }
         
-        #question { background-color: #000; padding: 15px; border-radius: 8px; text-align: center; font-size: 1.4em; font-weight: 700; margin: 25px 0; border: 2px solid var(--panel-bg); }
+        #question { background-color: #000; padding: 15px; border-radius: 8px; text-align: center; font-size: 1.4em; font-weight: 700; margin: 25px 0; border: 2px solid var(--panel-bg); line-height: 1.4; }
+        #question .double-points-text { color: var(--gold-text); font-family: var(--font-display); display: block; font-size: 0.8em; }
+
         #board { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 25px; perspective: 1000px; }
-        .answer-card { background-color: transparent; height: 60px; border-radius: 5px; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
+        .answer-card { background-color: transparent; height: 60px; border-radius: 5px; position: relative; transform-style: preserve-3d; transition: transform 0.6s; scroll-margin-top: 20px; }
         .answer-card.revealed { transform: rotateY(180deg); }
-        .card-face { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 5px; }
+        .card-face { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 5px; box-sizing: border-box; }
         .card-front { background: linear-gradient(145deg, #0a4a8d, #063a70); border: 2px solid var(--panel-border); font-size: 2.5em; font-family: var(--font-display); }
-        .card-back { background-color: var(--panel-bg); border: 2px solid var(--panel-border); transform: rotateY(180deg); display: flex; justify-content: space-between; padding: 0 20px; font-size: 1.5em; text-transform: uppercase; }
-        .answer-points { font-weight: 700; color: var(--gold-text); }
+        .card-back { background-color: var(--panel-bg); border: 2px solid var(--panel-border); transform: rotateY(180deg); display: flex; justify-content: space-between; padding: 0 20px; font-size: 1.5em; text-transform: uppercase; align-items: center; }
+        .answer-text { flex-grow: 1; text-align: left; }
+        .answer-points { font-weight: 700; color: var(--gold-text); padding-left: 15px; flex-shrink: 0; }
         .missed-answer .answer-text, .missed-answer .answer-points { color: var(--strike-red) !important; text-shadow: 0 0 5px #000; }
         #controls { display: flex; gap: 10px; }
         #guess-input { flex-grow: 1; padding: 15px; border: 2px solid var(--panel-border); border-radius: 5px; background-color: #011a2f; color: var(--text-light); font-size: 1.2em; }
@@ -84,72 +110,31 @@
         .game-button:hover { background-color: #ffe066; }
         #reveal-button { background-color: var(--strike-red); color: var(--text-light); width: 100%; margin-top: 10px; }
 
-        /* Villámkör Stílusok */
-        #fast-money-container { display: none; }
-        #fm-header { text-align: center; }
-        #fm-title { font-size: 3em; font-family: var(--font-display); color: var(--gold-text); margin: 0; }
-        #timer { font-size: 5em; font-family: var(--font-display); color: var(--gold-text); text-shadow: 0 0 15px #ffc400; }
-        .fm-qa-pair { display: flex; align-items: center; margin-bottom: 15px; }
-        .fm-question { width: 50%; text-align: right; padding-right: 15px; font-size: 1.2em; }
-        .fm-input { width: 50%; padding: 10px; font-size: 1.2em; border: 2px solid var(--panel-border); border-radius: 5px; background-color: #011a2f; color: var(--text-light); }
-        #fm-results { text-align: center; font-size: 1.2em; line-height: 1.8; }
-        #fm-final-score { font-size: 2em; font-weight: bold; color: var(--gold-text); margin-top: 15px; }
-        #fm-prize-message { font-size: 2.5em; font-family: var(--font-display); color: var(--gold-text); text-shadow: 0 0 10px var(--gold-text); margin-top: 10px; }
-
         .hidden { display: none !important; }
 
-        /* ================================== */
-        /* === MOBILNÉZET (RESZPONZÍV DIZÁJN) === */
-        /* ================================== */
         @media (max-width: 650px) {
-            body {
-                padding: 5px;
-            }
-            .container {
-                padding: 15px;
-            }
-
+            body { padding: 5px; }
+            .container { padding: 15px; }
             #start-container h1 { font-size: 2em; }
             #start-container p { font-size: 1em; }
-
-            #header {
-                grid-template-columns: 1fr;
-                gap: 15px;
-                text-align: center;
-            }
-            #challenge-info-box, #score-box {
-                text-align: center;
-            }
+            #header { grid-template-columns: 1fr; gap: 15px; text-align: center; }
+            #challenge-info-box, #score-box { text-align: center; }
             #played-block-time { font-size: 1.2em; }
             #game-title { font-size: 2em; }
             #score { font-size: 2.5em; }
-            
             #question { font-size: 1.1em; }
-            .card-back { font-size: 1.1em; }
+            .card-back { font-size: 1.1em; padding: 0 10px; justify-content: space-between; }
+            .answer-text { flex: 1; min-width: 0; overflow-wrap: break-word; word-break: break-word; padding-right: 8px; }
             .strike-x { font-size: 3em; }
-
-            .fm-qa-pair {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .fm-question {
-                width: 100%;
-                text-align: center;
-                padding-right: 0;
-                padding-bottom: 8px;
-            }
-            .fm-input {
-                width: 100%;
-                box-sizing: border-box; /* Fontos, hogy a padding ne növelje a szélességet */
-            }
-            #fm-title { font-size: 2.5em; }
-            #timer { font-size: 4em; }
+            #notification-bar { font-size: 1.1em; padding: 8px 15px; width: 90%; text-align: center; top: 90px; }
+            #notification-bar.show { top: 75px; }
         }
     </style>
 </head>
 <body>
 
     <div id="game-container" class="container hidden">
+        <div id="notification-bar"></div>
         <div id="header">
             <div id="challenge-info-box">
                 <h2>Játszott Blokk:</h2>
@@ -164,7 +149,7 @@
         <div id="strikes">
             <span class="strike-x" id="strike1">X</span><span class="strike-x" id="strike2">X</span><span class="strike-x" id="strike3">X</span>
         </div>
-        <div id="question">...</div>
+        <div id="question"></div>
         <div id="board"></div>
         <div id="controls">
             <input type="text" id="guess-input" placeholder="Írd be a tipped..." autocomplete="off">
@@ -175,18 +160,18 @@
         </div>
     </div>
 
+    <!-- Villámkör és Kezdőképernyő HTML változatlan maradt... -->
     <div id="fast-money-container" class="container"></div>
-
     <div id="start-container" class="container">
         <h1>Üdv a Tipp-Bajnok Játékban!</h1>
         <p>A játék 15 perces, szinkronizált blokkokból áll. Ha a barátaiddal egyszerre indítjátok el a játékot, ugyanazt a kihívást kapjátok! Készen állsz?</p>
         <button id="start-challenge-button" class="game-button" style="width: 60%; margin: 20px auto 0 auto; display:block; padding: 20px;">Kihívás Indítása!</button>
     </div>
 
-
     <script>
+
         const mainGameData = [
-    { question: "Nevezz meg egy dolgot, ami egy kanapé alatt lehet!", answers: { "por": 45, "pénz": 25, "játék": 15, "távirányító": 10, "morzsa": 5 } },
+            { question: "Nevezz meg egy dolgot, ami egy kanapé alatt lehet!", answers: { "por": 45, "pénz": 25, "játék": 15, "távirányító": 10, "morzsa": 5 } },
     { question: "Mondj egy okot, amiért felhívsz valakit telefonon!", answers: { "megkérdezni hogy van": 40, "segítséget kérni": 25, "találkozót megbeszélni": 15, "szülinapot kívánni": 12, "pletykálni": 8 } },
     { question: "Nevezz meg egy sajtfajtát!", answers: { "trappista": 50, "ementáli": 20, "cheddar": 15, "parmezán": 10, "camembert": 5 } },
     { question: "Mondj egy dolgot, amit egy hot dogra teszel!", answers: { "mustár": 45, "ketchup": 30, "majonéz": 10, "pirított hagyma": 8, "uborka": 7 } },
@@ -585,11 +570,10 @@
     { question: "Mondj egy dolgot, amit egy légkalapács csinál!", answers: { "zajt": 40, "feltöri az aszfaltot": 35, "port": 10, "rezeg": 8, "lyukat készít": 7 } },
     { question: "Nevezz meg egy dolgot, ami egy szemetesautóban van!", answers: { "szemét": 40, "szemeteszsák": 25, "szag": 15, "prés": 12, "kukás": 8 } },
     { question: "Mondj egy okot, amiért valaki elájul!", answers: { "vér látványa": 40, "nagy fájdalom": 25, "ijedtség": 15, "nagy meleg": 12, "levegőhiány": 8 } },
-]; 
+ ]; 
         // --- DOM ELEMEK ---
         const startContainer = document.getElementById('start-container');
         const gameContainer = document.getElementById('game-container');
-        const fastMoneyContainer = document.getElementById('fast-money-container');
         const questionEl = document.getElementById('question');
         const boardEl = document.getElementById('board');
         const scoreEl = document.getElementById('score');
@@ -599,6 +583,7 @@
         const buttonContainer = document.getElementById('button-container');
         const strikes = [document.getElementById('strike1'), document.getElementById('strike2'), document.getElementById('strike3')];
         const playedBlockTimeEl = document.getElementById('played-block-time');
+        const notificationBar = document.getElementById('notification-bar');
 
         // --- JÁTÉK ÁLLAPOT ---
         let currentQuestions = [];
@@ -607,7 +592,9 @@
         let revealedAnswers = [];
         let currentStrikes = 0;
         let score = 0;
-        let gameTimerInterval;
+        // === ÚJ ÁLLAPOTVÁLTOZÓK ===
+        let currentStreak = 0;
+        let isDoublePointsRound = false;
         
         const GAME_INTERVAL_MS = 15 * 60 * 1000;
 
@@ -617,12 +604,24 @@
         function mulberry32(a) { return function() { var t = a += 0x6D2B79F5; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; } }
         function shuffleArray(array, randomFunc) { let currentIndex = array.length, randomIndex; while (currentIndex != 0) { randomIndex = Math.floor(randomFunc() * currentIndex); currentIndex--; [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]]; } return array; }
         
+        // === ÚJ: NOTIFIKÁCIÓS FÜGGVÉNY ===
+        let notificationTimeout;
+        function showNotification(message) {
+            clearTimeout(notificationTimeout);
+            notificationBar.textContent = message;
+            notificationBar.classList.add('show');
+            notificationTimeout = setTimeout(() => {
+                notificationBar.classList.remove('show');
+            }, 2500); // 2.5 másodpercig látható
+        }
+
         // --- JÁTÉK INDÍTÓ FÜGGVÉNY ---
         function startGame() {
             startContainer.classList.add('hidden');
             gameContainer.classList.remove('hidden');
-            fastMoneyContainer.style.display = 'none';
-            
+            // fastMoneyContainer elrejtése a start képernyőn
+            document.getElementById('fast-money-container').style.display = 'none';
+
             score = 0;
             updateScoreDisplay();
             
@@ -630,18 +629,25 @@
             const seed = Math.floor(now / GAME_INTERVAL_MS);
             const randomGenerator = mulberry32(seed);
 
-            // Kiírjuk az aktuális blokk idejét
             const blockStartTime = new Date(seed * GAME_INTERVAL_MS);
             const blockEndTime = new Date((seed + 1) * GAME_INTERVAL_MS);
             const formatTime = (date) => date.toTimeString().substring(0, 5);
             playedBlockTimeEl.textContent = `${formatTime(blockStartTime)} - ${formatTime(blockEndTime)}`;
 
             let shuffledMainData = [...mainGameData];
-            shuffleArray(shuffledMainData, randomGenerator);
-            
-            // Fő játék és Villámkör kérdések szétválasztása
-            currentQuestions = shuffledMainData.slice(0, 10);
-            window.fmQuestionsForRound = shuffledMainData.slice(10, 15);
+             if (shuffledMainData.length < 15 && shuffledMainData.length >= 10) { // Módosítva, hogy tesztelhető legyen 10 kérdéssel
+                window.fmQuestionsForRound = shuffledMainData.slice(5, 10); // Teszteléshez
+                currentQuestions = shuffledMainData.slice(0, 5); // Teszteléshez
+            } else if (shuffledMainData.length >= 15) {
+                shuffleArray(shuffledMainData, randomGenerator);
+                currentQuestions = shuffledMainData.slice(0, 10);
+                window.fmQuestionsForRound = shuffledMainData.slice(10, 15);
+            } else {
+                 alert("Hiba: Nincs elég kérdés a játék elindításához! Minimum 10 szükséges.");
+                 startContainer.classList.remove('hidden');
+                 gameContainer.classList.add('hidden');
+                 return;
+            }
             
             currentQuestionIndex = -1;
             nextRound();
@@ -650,14 +656,31 @@
         function nextRound() {
             currentQuestionIndex++;
             if (currentQuestionIndex >= currentQuestions.length) {
-                startFastMoney();
+                // startFastMoney(); // Villámkört ideiglenesen kikapcsolhatod teszteléshez
+                alert("Játék vége! Végső pontszám: " + score);
+                gameContainer.classList.add('hidden');
+                startContainer.classList.remove('hidden');
                 return;
             }
+
+            // === ÚJ SZABÁLYOK INICIALIZÁLÁSA ===
+            currentStreak = 0;
+            isDoublePointsRound = [3, 7].includes(currentQuestionIndex); // 4. és 8. kör (0-alapú index)
+            
             const questionData = currentQuestions[currentQuestionIndex];
             currentAnswers = questionData.answers;
             revealedAnswers = [];
             currentStrikes = 0;
-            questionEl.textContent = `(${currentQuestionIndex + 1}/10) ${questionData.question}`;
+            
+            // Kérdés kiírása a Dupla Pont jelzéssel
+            let roundTitle = `(${currentQuestionIndex + 1}/${currentQuestions.length})`;
+            let questionText = questionData.question;
+            if (isDoublePointsRound) {
+                questionEl.innerHTML = `${roundTitle} <span class="double-points-text">DUPLA PONT KÖR!</span> ${questionText}`;
+            } else {
+                questionEl.innerHTML = `${roundTitle} <br> ${questionText}`;
+            }
+
             boardEl.innerHTML = '';
             strikes.forEach(s => s.classList.remove('visible'));
             guessInput.disabled = false;
@@ -681,11 +704,7 @@
             
             let matchFound = null;
             for (const key in currentAnswers) {
-                const normalizedKey = normalizeText(key);
-                const isPerfectMatch = userGuess === normalizedKey;
-                const isSmartMatch = (userGuess.includes(normalizedKey) || normalizedKey.includes(userGuess)) && Math.min(userGuess.length, normalizedKey.length) >= 3;
-                
-                if ((isPerfectMatch || isSmartMatch) && !revealedAnswers.includes(normalizedKey)) {
+                if (normalizeText(key) === userGuess && !revealedAnswers.includes(userGuess)) {
                     matchFound = key;
                     break;
                 }
@@ -694,18 +713,46 @@
             if (matchFound) {
                 const normalizedMatch = normalizeText(matchFound);
                 revealedAnswers.push(normalizedMatch);
-                score += currentAnswers[matchFound];
+                
+                // === PONTOZÁS AZ ÚJ SZABÁLYOKKAL ===
+                let pointsAwarded = currentAnswers[matchFound];
+                if (isDoublePointsRound) { pointsAwarded *= 2; }
+                score += pointsAwarded;
+                currentStreak++;
+
+                if (currentStreak >= 3 && currentStreak % 3 === 0) {
+                    let streakBonus = isDoublePointsRound ? 60 : 30;
+                    score += streakBonus;
+                    showNotification(`SOROZAT BÓNUSZ! +${streakBonus} PONT`);
+                }
+
                 updateScoreDisplay();
                 const card = document.querySelector(`.answer-card[data-answer="${normalizedMatch}"]`);
                 card.classList.add('revealed');
-                if (revealedAnswers.length === Object.keys(currentAnswers).length) endRound();
-            } else { addStrike(); }
+
+                if (revealedAnswers.length === Object.keys(currentAnswers).length) {
+                    let boardBonus = isDoublePointsRound ? 100 : 50;
+                    score += boardBonus;
+                    updateScoreDisplay();
+                    showNotification(`TÁBLA BÓNUSZ! +${boardBonus} PONT`);
+                    endRound();
+                }
+            } else {
+                addStrike();
+            }
             
             guessInput.value = '';
             guessInput.focus();
         }
         
-        function addStrike() { if (currentStrikes < 3) { strikes[currentStrikes].classList.add('visible'); currentStrikes++; if (currentStrikes === 3) endRound(); } }
+        function addStrike() {
+            currentStreak = 0; // Sorozat megszakad
+            if (currentStrikes < 3) {
+                strikes[currentStrikes].classList.add('visible');
+                currentStrikes++;
+                if (currentStrikes === 3) endRound();
+            }
+        }
         function endRound() {
             guessInput.disabled = true;
             guessButton.disabled = true;
@@ -718,60 +765,13 @@
                 buttonContainer.appendChild(revealButton);
             }
         }
-        function revealAllAnswers() { document.querySelectorAll('.answer-card').forEach(card => { if (!card.classList.contains('revealed')) card.classList.add('revealed', 'missed-answer'); }); this.remove(); }
-        
-        // --- VILLÁMKÖR LOGIKA ---
-        function startFastMoney() {
-            gameContainer.classList.add('hidden');
-            fastMoneyContainer.style.display = 'block';
-            fastMoneyContainer.innerHTML = `<div id="fm-header"><h2 id="fm-title">Villámkör</h2><div id="timer">45</div></div><div id="fm-body"></div><div id="fm-results"></div>`;
-            const fmBody = document.getElementById('fm-body');
-            const fmQuestionsSet = window.fmQuestionsForRound;
-            fmQuestionsSet.forEach((q, index) => { fmBody.innerHTML += `<div class="fm-qa-pair"><div class="fm-question">${q.question}</div><input type="text" class="fm-input" id="fm-input-${index}"></div>`; });
-            fmBody.innerHTML += `<button id="fm-evaluate-button" class="game-button" style="width: 100%; margin-top: 10px;">Kiértékelés</button>`;
-            document.getElementById('fm-evaluate-button').addEventListener('click', () => evaluateFastMoney(fmQuestionsSet));
-            let timeLeft = 45;
-            const timerEl = document.getElementById('timer');
-            timerEl.textContent = timeLeft;
-            gameTimerInterval = setInterval(() => { timeLeft--; timerEl.textContent = timeLeft; if (timeLeft <= 0) { clearInterval(gameTimerInterval); evaluateFastMoney(fmQuestionsSet); } }, 1000);
-        }
-
-        function evaluateFastMoney(fmQuestionsSet) {
-            if (gameTimerInterval) clearInterval(gameTimerInterval);
-            document.querySelectorAll('.fm-input').forEach(input => input.disabled = true);
-            const evalBtn = document.getElementById('fm-evaluate-button');
-            if(evalBtn) evalBtn.remove();
-            let fmTotalScore = 0;
-            const fmResults = document.getElementById('fm-results');
-            let resultsHTML = "<h3>Eredmények:</h3>";
-            fmQuestionsSet.forEach((q, index) => {
-                const userInput = normalizeText(document.getElementById(`fm-input-${index}`).value);
-                let points = 0;
-                let bestMatch = "Nincs találat";
-                if(userInput) {
-                    for (const answer in q.answers) {
-                        const normalizedAnswer = normalizeText(answer);
-                        const isPerfectMatch = userInput === normalizedAnswer;
-                        const isSmartMatch = (userInput.includes(normalizedAnswer) || normalizedAnswer.includes(userInput)) && Math.min(userInput.length, normalizedAnswer.length) >= 3;
-                        if (isPerfectMatch || isSmartMatch) { points = q.answers[answer]; bestMatch = answer.toUpperCase(); break; }
-                    }
-                }
-                fmTotalScore += points;
-                resultsHTML += `<div>"${userInput || '...'}" &rarr; ${bestMatch}: <strong>${points} pont</strong></div>`;
+        function revealAllAnswers() {
+            document.querySelectorAll('.answer-card').forEach(card => {
+                if (!card.classList.contains('revealed')) card.classList.add('revealed', 'missed-answer');
             });
-            resultsHTML += `<div id="fm-final-score">Villámkör összesen: ${fmTotalScore} pont</div>`;
-            resultsHTML += `<div id="fm-final-score">Végső pontszám: ${score + fmTotalScore} pont</div>`;
-            if (fmTotalScore >= 200) { resultsHTML += `<div id="fm-prize-message">GRATULÁLOK, MEGVAN A FŐDÍJ!</div>`; }
-            fmResults.innerHTML = resultsHTML;
-            const finalNewGameButton = document.createElement('button');
-            finalNewGameButton.textContent = 'Vissza a Főoldalra';
-            finalNewGameButton.classList.add('game-button');
-            finalNewGameButton.style.width = '100%';
-            finalNewGameButton.style.marginTop = '20px';
-            finalNewGameButton.onclick = () => { fastMoneyContainer.style.display = 'none'; startContainer.classList.remove('hidden'); };
-            fmResults.appendChild(finalNewGameButton);
+            this.remove();
         }
-
+        
         // --- ESEMÉNYKEZELŐK ---
         document.getElementById('start-challenge-button').addEventListener('click', startGame);
         guessButton.addEventListener('click', handleGuess);
@@ -779,4 +779,4 @@
         guessInput.addEventListener('keyup', (event) => { if (event.key === "Enter") handleGuess(); });
     </script>
 </body>
-</html>
+</html>```
