@@ -7,7 +7,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -17,83 +17,117 @@
             --text-light: #f0f0f0;
             --gold-text: #ffc400;
             --strike-red: #ff6b6b;
+            --correct-green: #63e6be;
             --font-display: 'Oswald', sans-serif;
             --font-body: 'Roboto', sans-serif;
+            --gp-bg: #000c18;
+            --gp-accent: #00e5ff;
+            --gp-border: #ffc400;
         }
+
+        html { box-sizing: border-box; }
+        *, *::before, *::after { box-sizing: inherit; }
+        html, body { height: 100%; margin: 0; overflow-x: hidden; }
 
         body {
             font-family: var(--font-body);
             background: radial-gradient(circle, #011a2f, #000c18);
             color: var(--text-light);
             display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
             padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 900px;
-            background-color: var(--board-bg);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 0 40px rgba(90, 185, 234, 0.4);
-            border: 4px solid var(--panel-border);
-            position: relative; /* Pozícionáláshoz */
-        }
-
-        /* === ÚJ: Notifikációs sáv === */
-        #notification-bar {
-            position: absolute;
-            top: 110px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(255, 196, 0, 0.9);
-            color: #022b4e;
-            padding: 10px 25px;
-            border-radius: 20px;
-            font-family: var(--font-display);
-            font-size: 1.4em;
-            z-index: 100;
-            opacity: 0;
-            transition: opacity 0.5s, top 0.5s;
-            pointer-events: none; /* Ne lehessen rákattintani */
-        }
-        #notification-bar.show {
-            top: 90px;
-            opacity: 1;
+            transition: align-items 0.3s;
         }
         
-        /* Kezdőképernyő */
-        #start-container h1 { font-size: 2.5em; text-align:center; color: var(--gold-text); font-family: var(--font-display); }
-        #start-container p { text-align:center; font-size: 1.2em; line-height: 1.6; max-width: 80%; margin: 15px auto 30px auto; }
+        body.centering { justify-content: center; align-items: center; }
+        body:not(.centering) { justify-content: center; align-items: flex-start; }
         
-        /* Fő Játék Stílusok */
-        #header {
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--panel-border);
-            padding-bottom: 15px;
+        #app-container { width: 100%; display: flex; justify-content: center; }
+        #main-wrapper { display: flex; align-items: flex-start; gap: 25px; width: 100%; max-width: 1300px; }
+        .container { background-color: var(--board-bg); border-radius: 20px; padding: 25px; box-shadow: 0 0 40px rgba(90, 185, 234, 0.4); border: 4px solid var(--panel-border); position: relative; width: 100%; }
+        #game-container { flex: 3; min-width: 0; }
+        
+        #start-container { display: flex; flex-direction: column; align-items: center; text-align: center; border-color: var(--gold-text); box-shadow: 0 0 30px rgba(255, 196, 0, 0.5); max-width: 800px; max-height: 95vh; overflow-y: auto; }
+        .logo-container { width: 100%; max-width: 120px; margin-bottom: 10px; flex-shrink: 0; }
+        .logo-container svg { width: 100%; height: auto; }
+        #start-container .start-title { font-size: 2.8em; color: var(--text-light); font-family: var(--font-display); text-shadow: 0 0 15px rgba(255, 255, 255, 0.5); margin: 0 0 15px 0; }
+        #start-container p.intro-text { font-size: 1.1em; line-height: 1.5; max-width: 90%; margin: 0 auto 25px auto; color: #bdcceb; }
+        #start-challenge-button { padding: 18px; font-size: 1.4em; border-radius: 10px; background: var(--gold-text); border: none; box-shadow: 0 5px 0 #b38600; transition: all 0.1s ease-out; width: 80%; }
+        #start-challenge-button:hover { transform: translateY(2px); box-shadow: 0 3px 0 #b38600; }
+
+        #rules-container {
+            width: 95%;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--panel-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+            text-align: left;
         }
-        #challenge-info-box { text-align: left; }
-        #challenge-info-box h2 { font-size: 1.1em; margin: 0 0 5px 0; font-family: var(--font-display); color: var(--text-light); }
+        #rules-container h3 { font-family: var(--font-display); color: var(--gold-text); font-size: 1.4em; margin-top: 10px; margin-bottom: 10px; }
+        #rules-container p { color: #bdcceb; line-height: 1.7; margin-bottom: 10px; }
+        #rules-container strong { color: var(--text-light); }
+        #rules-container ul { padding-left: 20px; margin-bottom: 10px; }
+        #rules-container li { margin-bottom: 5px; }
+
+        #guesses-container { flex: 1; position: sticky; top: 20px; }
+        #guesses-container h3 { font-family: var(--font-display); color: var(--gold-text); text-align: center; font-size: 1.5em; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid var(--panel-border); padding-bottom: 10px; }
+        #guesses-list { list-style: none; padding: 0; margin: 0; max-height: 500px; overflow-y: auto; }
+        #guesses-list li { padding: 10px; border-bottom: 1px solid var(--panel-bg); font-size: 1.1em; display: flex; align-items: center; gap: 10px; }
+        .correct-guess { color: var(--correct-green); } .correct-guess::before { content: '✓'; background-color: var(--correct-green); color: var(--board-bg); }
+        .wrong-guess { color: var(--strike-red); } .wrong-guess::before { content: '✗'; background-color: var(--strike-red); color: white; }
+        
+        #timer-display { font-family: var(--font-display); font-size: 2.5em; color: var(--gold-text); text-shadow: 0 0 10px var(--gold-text); text-align: center; margin: 15px 0; }
+        .golden-answer { background: linear-gradient(145deg, #ffde7a, #ffc400) !important; color: #412c00; }
+        .golden-answer .answer-points { color: #412c00 !important; }
+
+        .card-front.golden-flash .flash-content { animation: golden-flash-anim 1.5s linear; }
+        .flash-content { font-family: var(--font-display); color: var(--gold-text); font-size: 0.5em; text-align: center; line-height: 1.2; text-shadow: 0 0 10px #000; }
+        @keyframes golden-flash-anim { 0%, 20%, 40%, 60%, 80%, 100% { opacity: 1; transform: scale(1.1); } 10%, 30%, 50%, 70%, 90% { opacity: 0.3; transform: scale(1); } }
+        .point-fly-animation { position: fixed; z-index: 300; font-family: var(--font-display); font-size: 2em; font-weight: 700; color: var(--gold-text); text-shadow: 0 0 5px #000; transition: top 0.7s cubic-bezier(0.5, -0.75, 0.75, 1), left 0.7s ease-in-out, opacity 0.7s ease-in, transform 0.7s cubic-bezier(0.5, -0.75, 0.75, 1); }
+        .score-pulse { animation: score-pulse-anim 0.4s ease-out; }
+        @keyframes score-pulse-anim { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        #notification-bar { position: absolute; top: 110px; left: 50%; transform: translateX(-50%); background-color: rgba(255, 196, 0, 0.95); color: #022b4e; padding: 10px 25px; border-radius: 20px; font-family: var(--font-display); font-size: 1.4em; z-index: 100; opacity: 0; transition: opacity 0.5s, top 0.5s; pointer-events: none; text-align: center; }
+        #notification-bar.show { top: 90px; opacity: 1; }
+        #header { display: grid; grid-template-columns: 1fr 1fr; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--panel-border); padding-bottom: 15px; }
+        #challenge-info-box { text-align: left; } #challenge-info-box h2 { font-size: 1.1em; margin: 0 0 5px 0; font-family: var(--font-display); color: var(--text-light); }
         #played-block-time { font-size: 1.5em; font-family: var(--font-display); color: var(--gold-text); }
-        
-        #game-title { font-family: var(--font-display); color: var(--gold-text); text-transform: uppercase; margin: 0; font-size: 2.5em; text-align: center; }
         #score-box { text-align: right; }
-        #score-box h2 { margin: 0; font-family: var(--font-display); font-size: 1.5em; color: var(--gold-text); text-transform: uppercase; }
+        #daily-score-label { font-size: 1.5em; text-transform: uppercase; margin:0; color: var(--gold-text); font-family: var(--font-display); }
         #score { font-size: 3em; font-weight: 700; color: var(--gold-text); line-height: 1; }
-        
-        #strikes { display: flex; gap: 15px; margin-top: 15px; justify-content: center; scroll-margin-top: 20px; }
-        .strike-x { font-size: 4em; font-family: var(--font-display); color: var(--strike-red); text-shadow: 0 0 10px #ff0000; opacity: 0.2; transition: opacity 0.3s ease; }
-        .strike-x.visible { opacity: 1; }
-        
         #question { background-color: #000; padding: 15px; border-radius: 8px; text-align: center; font-size: 1.4em; font-weight: 700; margin: 25px 0; border: 2px solid var(--panel-bg); line-height: 1.4; }
         #question .double-points-text { color: var(--gold-text); font-family: var(--font-display); display: block; font-size: 0.8em; }
+        #question .fordito-text { color: var(--strike-red); font-family: var(--font-display); display: block; font-size: 0.8em; text-shadow: 0 0 5px var(--strike-red); }
+        #game-info-bar { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin: 25px 0; flex-wrap: wrap; }
+        #strikes { display: flex; gap: 15px; margin: 0; }
+        .strike-x { width: 60px; height: 60px; font-size: 2.5em; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: var(--font-display); font-weight: 700; border: 3px dashed rgba(255, 107, 107, 0.4); color: rgba(255, 107, 107, 0.4); transition: all 0.4s ease; }
+        .strike-x.visible { background-color: var(--strike-red); color: white; border-color: var(--strike-red); box-shadow: 0 0 15px var(--strike-red); animation: strike-appear 0.4s ease-out; }
+        @keyframes strike-appear { 0%{transform:scale(0);opacity:0;} 60%{transform:scale(1.2);} 100%{transform:scale(1);opacity:1;} }
+        #strikes.shake { animation: shake-container 0.6s ease-in-out; }
+        @keyframes shake-container { 0%,100%{transform:translateX(0);} 10%,30%,50%,70%,90%{transform:translateX(-8px);} 20%,40%,60%,80%{transform:translateX(8px);} }
+        #round-timer-box { text-align: center; }
+        #round-timer-box h2 { font-size: 1em; margin: 0 0 5px 0; font-family: var(--font-display); color: var(--text-light); }
+        #round-timer { font-size: 2.5em; font-family: var(--font-display); color: var(--correct-green); transition: color 0.3s; }
+        #round-timer-box.timer-expired #round-timer { color: var(--strike-red); }
+
+        #round-info-box {
+            font-family: var(--font-display);
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid var(--panel-bg);
+            border-radius: 8px;
+            padding: 10px 15px;
+            text-align: center;
+            flex-grow: 1;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #bdcceb;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+        #round-info-box.bonus-active { color: var(--correct-green); }
+        #round-info-box.expired { color: var(--strike-red); }
 
         #board { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 25px; perspective: 1000px; }
         .answer-card { background-color: transparent; height: 60px; border-radius: 5px; position: relative; transform-style: preserve-3d; transition: transform 0.6s; scroll-margin-top: 20px; }
@@ -109,69 +143,488 @@
         .game-button { padding: 15px 25px; border: none; border-radius: 5px; background-color: var(--gold-text); color: var(--board-bg); font-size: 1.2em; font-family: var(--font-display); text-transform: uppercase; cursor: pointer; transition: background-color 0.2s; width: 100%; display: block; }
         .game-button:hover { background-color: #ffe066; }
         #reveal-button { background-color: var(--strike-red); color: var(--text-light); width: 100%; margin-top: 10px; }
-
+        
+        #grand-prize-container, #evaluation-container { width: 100%; max-width: 900px; background: linear-gradient(160deg, #001e3c, var(--gp-bg)); border: 4px solid var(--gp-border); box-shadow: 0 0 50px var(--gp-accent); }
+        #evaluation-container { display: flex; flex-direction: column; max-height: 90vh; }
+        #evaluation-container h2 { flex-shrink: 0; font-family: var(--font-display); font-size: 2.5em; color: var(--gp-border); text-align: center; }
+        #evaluation-summary { flex-shrink: 0; font-size: 1.5em; text-align: center; margin: 20px 0; line-height: 1.5; }
+        #evaluation-list { list-style: none; padding: 0 15px 0 0; margin: 0; overflow-y: auto; }
+        #back-to-start-btn { flex-shrink: 0; margin-top: 20px; }
+        .eval-item { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+        .eval-question { font-weight: 700; font-size: 1.1em; margin-bottom: 10px; word-wrap: break-word; }
+        .eval-answer { display: flex; align-items: center; gap: 10px; font-size: 1em; word-wrap: break-word; }
+        .eval-answer.correct { color: var(--correct-green); } .eval-answer.incorrect { color: var(--strike-red); }
+        .eval-answer::before { font-family: var(--font-display); font-size: 1.5em; }
+        .eval-answer.correct::before { content: '✓'; } .eval-answer.incorrect::before { content: '✗'; }
+        
+        .gp-header { text-align: center; border-bottom: 2px solid var(--gp-border); padding-bottom: 15px; margin-bottom: 20px; }
+        .gp-logo { display: flex; align-items: center; justify-content: center; gap: 20px; }
+        .gp-logo .logo-container { max-width: 60px; margin: 0; }
+        .gp-logo h1 { font-family: var(--font-display); font-size: 2.5em; color: var(--gp-accent); margin: 0; text-shadow: 0 0 10px var(--gp-accent); }
+        #gp-timer { font-family: var(--font-display); font-size: 6em; font-weight: 700; color: var(--gp-border); text-shadow: 0 0 15px var(--gp-border); margin-top: 10px; }
+        #gp-progress-bar { width: 100%; height: 10px; background-color: rgba(0,0,0,0.3); border-radius: 5px; margin-top: 15px; }
+        #gp-progress-fill { width: 0%; height: 100%; background-color: var(--gp-accent); border-radius: 5px; transition: width 0.3s; }
+        #gp-question-area { margin: 20px 0; }
+        #gp-question-text { text-align: center; font-size: 1.8em; font-weight: 700; min-height: 100px; display: flex; align-items: center; justify-content: center; padding: 10px; }
+        #gp-options-area { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .gp-option-btn { background-color: var(--panel-bg); border: 2px solid var(--panel-border); color: var(--text-light); padding: 20px; font-size: 1.2em; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .gp-option-btn:hover { background-color: var(--panel-border); color: var(--board-bg); }
+        .gp-option-btn.selected { background-color: var(--gp-accent); color: var(--board-bg); border-color: var(--gp-accent); transform: scale(1.05); }
+        
         .hidden { display: none !important; }
 
-        @media (max-width: 650px) {
-            body { padding: 5px; }
-            .container { padding: 15px; }
-            #start-container h1 { font-size: 2em; }
-            #start-container p { font-size: 1em; }
-            #header { grid-template-columns: 1fr; gap: 15px; text-align: center; }
-            #challenge-info-box, #score-box { text-align: center; }
-            #played-block-time { font-size: 1.2em; }
-            #game-title { font-size: 2em; }
-            #score { font-size: 2.5em; }
-            #question { font-size: 1.1em; }
-            .card-back { font-size: 1.1em; padding: 0 10px; justify-content: space-between; }
-            .answer-text { flex: 1; min-width: 0; overflow-wrap: break-word; word-break: break-word; padding-right: 8px; }
-            .strike-x { font-size: 3em; }
-            #notification-bar { font-size: 1.1em; padding: 8px 15px; width: 90%; text-align: center; top: 90px; }
-            #notification-bar.show { top: 75px; }
-        }
+        @media (max-width: 960px) { body:not(.centering) { align-items: flex-start; } #main-wrapper { flex-direction: column; } #game-container, #guesses-container { width: 100%; } #guesses-container { margin-top: 20px; position: static; } }
+        @media (max-width: 768px) { #start-container .start-title { font-size: 2.8em; } #start-container p { font-size: 1.1em; max-width: 95%; } #start-challenge-button { width: 90%; font-size: 1.3em; } .logo-container { max-width: 120px; } #header { grid-template-columns: 1fr; gap: 15px; text-align: center; } #challenge-info-box, #score-box { text-align: center; } }
+        @media (max-width: 650px) { body { padding: 10px 5px; } .container { padding: 15px; } #played-block-time { font-size: 1.2em; } #score, #daily-score-label { font-size: 2.5em; } #daily-score-label { font-size: 1.2em; } #question { font-size: 1.1em; } #game-info-bar { flex-direction: column; gap: 20px; } .strike-x { width: 50px; height: 50px; font-size: 2.2em; } .card-back { font-size: 1.1em; padding: 0 10px; } .answer-text { flex: 1; min-width: 0; overflow-wrap: break-word; word-break: break-word; padding-right: 8px; } #notification-bar { font-size: 1.1em; padding: 8px 15px; width: 90%; top: 90px; } #notification-bar.show { top: 75px; } #don-modal { width: 90%; } #gp-timer { font-size: 4em; } #gp-question-text { font-size: 1.3em; min-height: 80px; } #gp-options-area { grid-template-columns: 1fr; } .gp-option-btn { padding: 15px; font-size: 1.1em; } }
     </style>
 </head>
-<body>
+<body class="centering">
+    
+    <div id="app-container">
+        <div id="main-wrapper" class="hidden">
+            <div id="game-container" class="container">
+                <div id="notification-bar"></div>
+                <div id="header">
+                    <div id="challenge-info-box"><h2>Játszott Blokk:</h2><div id="played-block-time">--:--</div></div>
+                    <div id="score-box"><h2 id="daily-score-label">Napi Pontok</h2><div id="score">0</div></div>
+                </div>
+                <div id="question"></div>
+                <div id="timer-display" class="hidden"></div>
+                <div id="game-info-bar">
+                    <div id="strikes"><span class="strike-x" id="strike1">X</span><span class="strike-x" id="strike2">X</span><span class="strike-x" id="strike3">X</span></div>
+                    <div id="round-timer-box" class="hidden"><h2>Idő Bónusz</h2><div id="round-timer">30</div></div>
+                    <div id="round-info-box"></div>
+                </div>
+                <div id="board"></div>
+                <div id="controls">
+                    <input type="text" id="guess-input" placeholder="Írd be a tipped..." autocomplete="off">
+                    <button id="guess-button" class="game-button" style="width: auto;">Tipp!</button>
+                </div>
+                <div id="button-container" style="margin-top: 10px;"><button id="next-round-button" class="game-button hidden">Tovább</button></div>
+            </div>
+            <div id="guesses-container" class="container"><h3>Próbálkozások</h3><ul id="guesses-list"></ul></div>
+        </div>
 
-    <div id="game-container" class="container hidden">
-        <div id="notification-bar"></div>
-        <div id="header">
-            <div id="challenge-info-box">
-                <h2>Játszott Blokk:</h2>
-                <div id="played-block-time">--:--</div>
+        <div id="grand-prize-container" class="container hidden">
+            <div class="gp-header">
+                <div class="gp-logo"><div class="logo-container"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bulb-gradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#e0f7fa;stop-opacity:1" /><stop offset="100%" style="stop-color:#b2ebf2;stop-opacity:1" /></linearGradient></defs><g class="logo-group"><path d="M 50,85 C 40,85 35,80 35,75 L 65,75 C 65,80 60,85 50,85 M 40,95 L 60,95 L 60,88 L 40,88 Z" fill="#b0bec5"/><path d="M 50 0 C 30 0 20 20 20 40 C 20 65 40 70 50 80 C 60 70 80 65 80 40 C 80 20 70 0 50 0 Z" fill="url(#bulb-gradient)"/><path d="M 45 60 L 42 55 L 45 50 M 55 60 L 58 55 L 55 50 M 48 62 L 52 62 L 50 50 Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="#ffc400" fill="none"/><path d="M 25 15 L 75 15 L 70 25 L 55 20 L 50 30 L 45 20 L 30 25 Z" fill="#ffc400" /></g></svg></div><h1>Fődíj Játék</h1></div>
+                <div id="gp-timer">50.0</div>
+                <div id="gp-progress-bar"><div id="gp-progress-fill"></div></div>
             </div>
-            <h1 id="game-title">Tipp-Bajnok</h1>
-            <div id="score-box">
-                <h2>PONTSZÁM</h2>
-                <div id="score">0</div>
+            <div id="gp-question-area"><div id="gp-question-text"></div></div>
+            <div id="gp-options-area"></div>
+        </div>
+
+        <div id="evaluation-container" class="container hidden">
+            <h2>Kiértékelés</h2>
+            <p id="evaluation-summary"></p>
+            <ul id="evaluation-list"></ul>
+            <button id="back-to-start-btn" class="game-button">Vissza a Főoldalra</button>
+        </div>
+        
+        <div id="start-container" class="container">
+            <div class="logo-container">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bulb-gradient-start" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#e0f7fa;stop-opacity:1" /><stop offset="100%" style="stop-color:#b2ebf2;stop-opacity:1" /></linearGradient></defs><g class="logo-group"><path d="M 50,85 C 40,85 35,80 35,75 L 65,75 C 65,80 60,85 50,85 M 40,95 L 60,95 L 60,88 L 40,88 Z" fill="#b0bec5"/><path d="M 50 0 C 30 0 20 20 20 40 C 20 65 40 70 50 80 C 60 70 80 65 80 40 C 80 20 70 0 50 0 Z" fill="url(#bulb-gradient-start)"/><path d="M 45 60 L 42 55 L 45 50 M 55 60 L 58 55 L 55 50 M 48 62 L 52 62 L 50 50 Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="#ffc400" fill="none"/><path d="M 25 15 L 75 15 L 70 25 L 55 20 L 50 30 L 45 20 L 30 25 Z" fill="#ffc400" /></g></svg>
             </div>
-        </div>
-        <div id="strikes">
-            <span class="strike-x" id="strike1">X</span><span class="strike-x" id="strike2">X</span><span class="strike-x" id="strike3">X</span>
-        </div>
-        <div id="question"></div>
-        <div id="board"></div>
-        <div id="controls">
-            <input type="text" id="guess-input" placeholder="Írd be a tipped..." autocomplete="off">
-            <button id="guess-button" class="game-button" style="width: auto;">Tipp!</button>
-        </div>
-        <div id="button-container" style="margin-top: 10px;">
-             <button id="next-round-button" class="game-button">Következő Kérdés</button>
+            <h1 class="start-title">Tipp-Bajnok</h1>
+            <p class="intro-text">A játék 15 perces, szinkronizált blokkokból áll. Gyűjts pontokat a nap folyamán és nyerd meg a Fődíjat! Készen állsz?</p>
+            <button id="start-challenge-button" class="game-button">Kihívás Indítása!</button>
+            <div id="rules-container">
+                <h3>Játékszabályzat</h3>
+                <p><strong>A Játék Célja:</strong> A Tipp-Bajnok egy napon átívelő pontgyűjtő játék. A célod, hogy a 15 perces blokkokban a lehető legtöbb pontot gyűjtsd össze, majd a nap végén a Fődíj Játékban megkoronázd a teljesítményedet. A napi pontjaid minden nap éjfélkor nullázódnak.</p>
+                <h3>Az Alapjáték (10 kör)</h3>
+                <p>Minden blokk 10 körből áll. A feladatod, hogy kitaláld a legnépszerűbb válaszokat egy adott kérdésre.</p>
+                <p><strong>Időalapú Pontozás:</strong> Minden normál kör elején elindul egy <strong>30 másodperces számláló</strong>.
+                    <ul>
+                        <li><strong>Gyors Tipp Bónusz:</strong> Ha a számláló pörgése közben adsz helyes tippet, a válasz pontszámán felül extra bónuszpontokat kapsz, amelyek a hátralévő másodpercekkel egyenlőek.</li>
+                        <li><strong>Időbónusz:</strong> Minden helyes tippért <strong>+3 másodpercet</strong> kapsz ajándékba.</li>
+                        <li><strong>Ha lejár az idő:</strong> A tippelés folytatódik, de már csak a szavakért járó alap pontokat kapod meg, időbónuszt nem.</li>
+                    </ul>
+                </p>
+                <p><strong>Hibák (X-ek):</strong> Háromszor hibázhatsz egy körben. A harmadik hiba után a tippelés lezárul, és megjelenik a <strong>"Válaszok Felfedése"</strong> gomb, amivel megnézheted a kihagyott megoldásokat.</p>
+                <h3>Speciális Körök</h3>
+                <ul>
+                    <li><strong>Arany Válasz (Minden körben):</strong> Minden körben van egy titkos, alacsonyabb pontszámú válasz, ami <strong>+100 extra pontot</strong> ér, ha eltalálod!</li>
+                    <li><strong>Dupla Pont Kör (Egyes körökben):</strong> Bizonyos körökben minden szerzett pont duplán számít!</li>
+                    <li><strong>Időpánik (8. kör):</strong> Egy 60 másodperces adrenalin-bomba! Nincsenek hibák. A helyes tippek <strong>+5 másodpercet</strong> adnak az órához, a rosszak viszont <strong>-10-et</strong> vesznek el!</li>
+                    <li><strong>Fordító Kör (10. kör):</strong> Az utolsó, mindent eldöntő kör! <strong>Egyetlen tipped van.</strong> Ha helyes, a válasz pontszámát <strong>megszorozzuk tízzel</strong>. Ha helytelen, <strong>levonunk 50 pontot</strong>.</li>
+                </ul>
+                <h3>A Fődíj Játék</h3>
+                <p>A 10. kör után következik a nagy finálé. Egy <strong>50 másodperces</strong>, pörgős kvízjáték 10 kérdéssel. A teljesítményed alapján a napi pontjaid sorsa a következőképpen alakul:</p>
+                <ul>
+                    <li><strong>10 helyes válasz:</strong> A napi pontszámod <strong>MEGDUPLÁZÓDIK!</strong></li>
+                    <li><strong>8-9 helyes válasz:</strong> Kapsz <strong>+200 bónuszpontot</strong>.</li>
+                    <li><strong>6-7 helyes válasz:</strong> Kapsz <strong>+100 bónuszpontot</strong>.</li>
+                    <li><strong>5 vagy kevesebb helyes válasz:</strong> Sajnos a napi pontszámod <strong>lenullázódik</strong>.</li>
+                </ul>
+                <p>Sok sikert, Bajnok!</p>
+            </div>
         </div>
     </div>
-
-    <!-- Villámkör és Kezdőképernyő HTML változatlan maradt... -->
-    <div id="fast-money-container" class="container"></div>
-    <div id="start-container" class="container">
-        <h1>Üdv a Tipp-Bajnok Játékban!</h1>
-        <p>A játék 15 perces, szinkronizált blokkokból áll. Ha a barátaiddal egyszerre indítjátok el a játékot, ugyanazt a kihívást kapjátok! Készen állsz?</p>
-        <button id="start-challenge-button" class="game-button" style="width: 60%; margin: 20px auto 0 auto; display:block; padding: 20px;">Kihívás Indítása!</button>
-    </div>
-
+    
     <script>
+        // --- JAVÍTÁS: TESZT KÉRDÉSEK HOZZÁADVA ---
+        const grandPrizeQuizData = [ 
+         { question: "Melyik állat a dzsungel királya?", options: ["Tigris", "Oroszlán", "Medve", "Elefánt"], correctAnswer: 1 },
+    { question: "Hány nap van egy héten?", options: ["5", "6", "7", "8"], correctAnswer: 2 },
+    { question: "Mi Magyarország fővárosa?", options: ["Debrecen", "Szeged", "Pécs", "Budapest"], correctAnswer: 3 },
+    { question: "Melyik a legnagyobb óceán?", options: ["Atlanti-óceán", "Indiai-óceán", "Csendes-óceán", "Jeges-tenger"], correctAnswer: 2 },
+    { question: "Melyik hónappal kezdődik az év?", options: ["Január", "Február", "December", "Március"], correctAnswer: 0 },
+    { question: "Ki volt az első ember a Holdon?", options: ["Jurij Gagarin", "Buzz Aldrin", "Neil Armstrong", "Michael Collins"], correctAnswer: 2 },
+    { question: "Melyik szín nem szerepel a magyar zászlóban?", options: ["Piros", "Fehér", "Zöld", "Kék"], correctAnswer: 3 },
+    { question: "Hány lába van egy póknak?", options: ["4", "6", "8", "10"], correctAnswer: 2 },
+    { question: "Melyik a legnépesebb ország a Földön?", options: ["USA", "India", "Kína", "Oroszország"], correctAnswer: 1 },
+    { question: "Mi a H2O?", options: ["Levegő", "Tűz", "Föld", "Víz"], correctAnswer: 3 },
+    { question: "Melyik évszak követi a nyarat?", options: ["Tavasz", "Tél", "Ősz", "Mindegyik"], correctAnswer: 2 },
+    { question: "Melyik mesében szerepel Hófehérke?", options: ["Hamupipőke", "Csipkerózsika", "Hófehérke és a hét törpe", "A kis hableány"], correctAnswer: 2 },
+    { question: "Melyik hangszernek van fekete és fehér billentyűje?", options: ["Hegedű", "Dob", "Gitár", "Zongora"], correctAnswer: 3 },
+    { question: "Mi a hivatalos nyelve Brazíliának?", options: ["Spanyol", "Portugál", "Angol", "Brazil"], correctAnswer: 1 },
+    { question: "Melyik a 'Végtelen Kő' a Marvel filmekből?", options: ["Erő Köve", "Idő Köve", "Elme Köve", "Mindegyik"], correctAnswer: 3 },
+    { question: "Hány óra van egy napban?", options: ["12", "24", "36", "48"], correctAnswer: 1 },
+    { question: "Melyik sportot űzi Michael Jordan?", options: ["Futball", "Kosárlabda", "Tenisz", "Golf"], correctAnswer: 1 },
+    { question: "Melyik a legnagyobb sivatag?", options: ["Góbi", "Kalahári", "Szahara", "Antarktiszi-sivatag"], correctAnswer: 3 },
+    { question: "Ki festette a Mona Lisát?", options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Michelangelo"], correctAnswer: 2 },
+    { question: "Melyik a legkeményebb természetes anyag?", options: ["Arany", "Vas", "Gyémánt", "Platina"], correctAnswer: 2 },
+    { question: "Melyik a leghosszabb folyó Európában?", options: ["Duna", "Tisza", "Volga", "Rajna"], correctAnswer: 2 },
+    { question: "Melyik híres épület áll Párizsban?", options: ["Colosseum", "Big Ben", "Szabadság-szobor", "Eiffel-torony"], correctAnswer: 3 },
+    { question: "Hány szín van egy szivárványban?", options: ["5", "6", "7", "8"], correctAnswer: 2 },
+    { question: "Melyik állat adja a tejet?", options: ["Tyúk", "Tehén", "Disznó", "Kecske"], correctAnswer: 1 },
+    { question: "Melyik a Föld bolygó legközelebbi csillaga?", options: ["Proxima Centauri", "Nap", "Szaturnusz", "Hold"], correctAnswer: 1 },
+    { question: "Melyik a legkisebb kontinens?", options: ["Európa", "Dél-Amerika", "Ausztrália", "Antarktisz"], correctAnswer: 2 },
+    { question: "Melyik a fő összetevője a gulyáslevesnek?", options: ["Csirke", "Marha", "Hal", "Sertés"], correctAnswer: 1 },
+    { question: "Melyik az a sport, ahol ütőt és labdát használnak egy háló felett?", options: ["Kosárlabda", "Tenisz", "Úszás", "Kézilabda"], correctAnswer: 1 },
+    { question: "Melyik az 'erős' oldal a Star Wars-ban?", options: ["A Sötét Oldal", "A Világos Oldal", "A Szürke Oldal", "Nincs ilyen"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb elem a Föld légkörében?", options: ["Oxigén", "Szén-dioxid", "Nitrogén", "Argon"], correctAnswer: 2 },
+    { question: "Hány foga van egy átlagos felnőtt embernek?", options: ["24", "28", "32", "36"], correctAnswer: 2 },
+    { question: "Melyik városban található a Pisai ferde torony?", options: ["Róma", "Pisa", "Firenze", "Velence"], correctAnswer: 1 },
+    { question: "Melyik ország híres a szamurájokról?", options: ["Kína", "Korea", "Japán", "Thaiföld"], correctAnswer: 2 },
+    { question: "Melyik a legnagyobb magyar tó?", options: ["Velencei-tó", "Fertő-tó", "Tisza-tó", "Balaton"], correctAnswer: 3 },
+    { question: "Hány másodperc van egy percben?", options: ["30", "60", "90", "120"], correctAnswer: 1 },
+    { question: "Melyik állat hápog?", options: ["Kutya", "Macska", "Kacsa", "Ló"], correctAnswer: 2 },
+    { question: "Ki a Mikulás segítője?", options: ["Húsvéti nyuszi", "Krampusz", "Télapó", "Manók"], correctAnswer: 1 },
+    { question: "Milyen színű egy tipikus taxi New Yorkban?", options: ["Piros", "Fehér", "Fekete", "Sárga"], correctAnswer: 3 },
+    { question: "Melyik a legkisebb madár a világon?", options: ["Veréb", "Cinege", "Kolibri", "Galamb"], correctAnswer: 2 },
+    { question: "Melyik bolygót hívják a 'Vörös Bolygónak'?", options: ["Vénusz", "Mars", "Jupiter", "Merkúr"], correctAnswer: 1 },
+    { question: "Melyik a legnépszerűbb közösségi média oldal?", options: ["Twitter", "Instagram", "Facebook", "TikTok"], correctAnswer: 2 },
+    { question: "Hány játékos van egy focicsapatban a pályán?", options: ["9", "10", "11", "12"], correctAnswer: 2 },
+    { question: "Melyik az a forma, aminek három oldala van?", options: ["Négyzet", "Kör", "Háromszög", "Téglalap"], correctAnswer: 2 },
+    { question: "Mi a Pókember valódi neve?", options: ["Bruce Wayne", "Clark Kent", "Peter Parker", "Tony Stark"], correctAnswer: 2 },
+    { question: "Melyik ünnep van december 25-én?", options: ["Húsvét", "Halloween", "Hálaadás", "Karácsony"], correctAnswer: 3 },
+    { question: "Melyik állat ugat?", options: ["Kutya", "Macska", "Egér", "Madár"], correctAnswer: 0 },
+    { question: "Melyik a leggyorsabb közlekedési eszköz?", options: ["Autó", "Vonat", "Repülőgép", "Hajó"], correctAnswer: 2 },
+    { question: "Melyik az a tárgy, amivel írni lehet a táblára?", options: ["Toll", "Ceruza", "Kréta", "Ecset"], correctAnswer: 2 },
+    { question: "Melyik a legfőbb összetevője a kenyérnek?", options: ["Cukor", "Só", "Liszt", "Tojás"], correctAnswer: 2 },
+    { question: "Hol él a jegesmedve?", options: ["Afrikában", "A sivatagban", "Az Északi-sarkon", "Ausztráliában"], correctAnswer: 2 },
+    { question: "Melyik állat a dzsungel királya?", options: ["Tigris", "Oroszlán", "Medve", "Elefánt"], correctAnswer: 1 },
+    { question: "Hány nap van egy héten?", options: ["5", "6", "7", "8"], correctAnswer: 2 },
+    { question: "Mi Magyarország fővárosa?", options: ["Debrecen", "Szeged", "Pécs", "Budapest"], correctAnswer: 3 },
+    { question: "Melyik a legnagyobb óceán?", options: ["Atlanti-óceán", "Indiai-óceán", "Csendes-óceán", "Jeges-tenger"], correctAnswer: 2 },
+    { question: "Melyik hónappal kezdődik az év?", options: ["Január", "Február", "December", "Március"], correctAnswer: 0 },
+    { question: "Ki volt az első ember a Holdon?", options: ["Jurij Gagarin", "Buzz Aldrin", "Neil Armstrong", "Michael Collins"], correctAnswer: 2 },
+    { question: "Melyik szín nem szerepel a magyar zászlóban?", options: ["Piros", "Fehér", "Zöld", "Kék"], correctAnswer: 3 },
+    { question: "Hány lába van egy póknak?", options: ["4", "6", "8", "10"], correctAnswer: 2 },
+    { question: "Melyik a legnépesebb ország a Földön?", options: ["USA", "India", "Kína", "Oroszország"], correctAnswer: 1 },
+    { question: "Mi a H2O?", options: ["Levegő", "Tűz", "Föld", "Víz"], correctAnswer: 3 },
+    { question: "Melyik évszak követi a nyarat?", options: ["Tavasz", "Tél", "Ősz", "Mindegyik"], correctAnswer: 2 },
+    { question: "Melyik mesében szerepel Hófehérke?", options: ["Hamupipőke", "Csipkerózsika", "Hófehérke és a hét törpe", "A kis hableány"], correctAnswer: 2 },
+    { question: "Melyik hangszernek van fekete és fehér billentyűje?", options: ["Hegedű", "Dob", "Gitár", "Zongora"], correctAnswer: 3 },
+    { question: "Mi a hivatalos nyelve Brazíliának?", options: ["Spanyol", "Portugál", "Angol", "Brazil"], correctAnswer: 1 },
+    { question: "Melyik a 'Végtelen Kő' a Marvel filmekből?", options: ["Erő Köve", "Idő Köve", "Elme Köve", "Mindegyik"], correctAnswer: 3 },
+    { question: "Hány óra van egy napban?", options: ["12", "24", "36", "48"], correctAnswer: 1 },
+    { question: "Melyik sportot űzi Michael Jordan?", options: ["Futball", "Kosárlabda", "Tenisz", "Golf"], correctAnswer: 1 },
+    { question: "Melyik a legnagyobb sivatag?", options: ["Góbi", "Kalahári", "Szahara", "Antarktiszi-sivatag"], correctAnswer: 3 },
+    { question: "Ki festette a Mona Lisát?", options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Michelangelo"], correctAnswer: 2 },
+    { question: "Melyik a legkeményebb természetes anyag?", options: ["Arany", "Vas", "Gyémánt", "Platina"], correctAnswer: 2 },
+    { question: "Melyik a leghosszabb folyó Európában?", options: ["Duna", "Tisza", "Volga", "Rajna"], correctAnswer: 2 },
+    { question: "Melyik híres épület áll Párizsban?", options: ["Colosseum", "Big Ben", "Szabadság-szobor", "Eiffel-torony"], correctAnswer: 3 },
+    { question: "Hány szín van egy szivárványban?", options: ["5", "6", "7", "8"], correctAnswer: 2 },
+    { question: "Melyik állat adja a tejet?", options: ["Tyúk", "Tehén", "Disznó", "Szarvas"], correctAnswer: 1 },
+    { question: "Melyik a Föld bolygó legközelebbi csillaga?", options: ["Proxima Centauri", "Nap", "Szaturnusz", "Hold"], correctAnswer: 1 },
+    { question: "Melyik a legkisebb kontinens?", options: ["Európa", "Dél-Amerika", "Ausztrália", "Antarktisz"], correctAnswer: 2 },
+    { question: "Melyik a fő összetevője a gulyáslevesnek?", options: ["Csirke", "Marha", "Hal", "Sertés"], correctAnswer: 1 },
+    { question: "Melyik az a sport, ahol ütőt és labdát használnak egy háló felett?", options: ["Kosárlabda", "Tenisz", "Úszás", "Kézilabda"], correctAnswer: 1 },
+    { question: "Melyik az 'erős' oldal a Star Wars-ban?", options: ["A Sötét Oldal", "A Világos Oldal", "A Szürke Oldal", "Nincs ilyen"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb elem a Föld légkörében?", options: ["Oxigén", "Szén-dioxid", "Nitrogén", "Argon"], correctAnswer: 2 },
+    { question: "Hány foga van egy átlagos felnőtt embernek?", options: ["24", "28", "32", "36"], correctAnswer: 2 },
+    { question: "Melyik városban található a Pisai ferde torony?", options: ["Róma", "Pisa", "Firenze", "Velence"], correctAnswer: 1 },
+    { question: "Melyik ország híres a szamurájokról?", options: ["Kína", "Korea", "Japán", "Thaiföld"], correctAnswer: 2 },
+    { question: "Melyik a legnagyobb magyar tó?", options: ["Velencei-tó", "Fertő-tó", "Tisza-tó", "Balaton"], correctAnswer: 3 },
+    { question: "Hány másodperc van egy percben?", options: ["30", "60", "90", "120"], correctAnswer: 1 },
+    { question: "Melyik állat hápog?", options: ["Kutya", "Macska", "Kacsa", "Ló"], correctAnswer: 2 },
+    { question: "Ki a Mikulás segítője?", options: ["Húsvéti nyuszi", "Krampusz", "Télapó", "Manók"], correctAnswer: 1 },
+    { question: "Milyen színű egy tipikus taxi New Yorkban?", options: ["Piros", "Fehér", "Fekete", "Sárga"], correctAnswer: 3 },
+    { question: "Melyik a legkisebb madár a világon?", options: ["Veréb", "Cinege", "Kolibri", "Galamb"], correctAnswer: 2 },
+    { question: "Melyik bolygót hívják a 'Vörös Bolygónak'?", options: ["Vénusz", "Mars", "Jupiter", "Merkúr"], correctAnswer: 1 },
+    { question: "Melyik a legnépszerűbb közösségi média oldal?", options: ["Twitter", "Instagram", "Facebook", "TikTok"], correctAnswer: 2 },
+    { question: "Hány játékos van egy focicsapatban a pályán?", options: ["9", "10", "11", "12"], correctAnswer: 2 },
+    { question: "Melyik az a forma, aminek három oldala van?", options: ["Négyzet", "Kör", "Háromszög", "Téglalap"], correctAnswer: 2 },
+    { question: "Mi a Pókember valódi neve?", options: ["Bruce Wayne", "Clark Kent", "Peter Parker", "Tony Stark"], correctAnswer: 2 },
+    { question: "Melyik ünnep van december 25-én?", options: ["Húsvét", "Halloween", "Hálaadás", "Karácsony"], correctAnswer: 3 },
+    { question: "Melyik állat ugat?", options: ["Kutya", "Macska", "Egér", "Madár"], correctAnswer: 0 },
+    { question: "Melyik a leggyorsabb közlekedési eszköz?", options: ["Autó", "Vonat", "Repülőgép", "Hajó"], correctAnswer: 2 },
+    { question: "Melyik az a tárgy, amivel írni lehet a táblára?", options: ["Toll", "Ceruza", "Kréta", "Ecset"], correctAnswer: 2 },
+    { question: "Melyik a legfőbb összetevője a kenyérnek?", options: ["Cukor", "Só", "Liszt", "Tojás"], correctAnswer: 2 },
+    { question: "Hol él a jegesmedve?", options: ["Afrikában", "A sivatagban", "Az Északi-sarkon", "Ausztráliában"], correctAnswer: 2 },
+    { question: "Milyen színű a banán, amikor érett?", options: ["Zöld", "Sárga", "Piros", "Kék"], correctAnswer: 1 },
+    { question: "Hány kerék van egy normál személyautón?", options: ["2", "3", "4", "5"], correctAnswer: 2 },
+    { question: "Melyik napszakban kel fel a Nap?", options: ["Délben", "Este", "Éjjel", "Reggel"], correctAnswer: 3 },
+    { question: "Milyen hangot ad ki a macska?", options: ["Nyerít", "Csipog", "Miau", "Búg"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb háziállat?", options: ["Pók", "Kígyó", "Kutya", "Oroszlán"], correctAnswer: 2 },
+    { question: "Mivel lehet a legkönnyebben eloltani a tüzet?", options: ["Olajjal", "Papírral", "Vízzel", "Fával"], correctAnswer: 2 },
+    { question: "Melyik testrészünkkel látunk?", options: ["Fül", "Orr", "Szem", "Száj"], correctAnswer: 2 },
+    { question: "Mit eszik a nyúl?", options: ["Húst", "Sajtot", "Répa", "Csokit"], correctAnswer: 2 },
+    { question: "Melyik bolygón élünk?", options: ["Mars", "Vénusz", "Jupiter", "Föld"], correctAnswer: 3 },
+    { question: "Mi az ellentéte a 'hideg'-nek?", options: ["Jeges", "Meleg", "Langyos", "Fagyos"], correctAnswer: 1 },
+    { question: "Milyen színű a fű?", options: ["Kék", "Piros", "Sárga", "Zöld"], correctAnswer: 3 },
+    { question: "Hány nap van egy normál évben?", options: ["360", "365", "370", "355"], correctAnswer: 1 },
+    { question: "Melyik a legnagyobb emlősállat?", options: ["Elefánt", "Zsiráf", "Kék bálna", "Víziló"], correctAnswer: 2 },
+    { question: "Melyik országban találhatóak a piramisok?", options: ["Görögország", "Olaszország", "Egyiptom", "Mexikó"], correctAnswer: 2 },
+    { question: "Melyik eszköz mutatja az időt?", options: ["Távcső", "Iránytű", "Hőmérő", "Óra"], correctAnswer: 3 },
+    { question: "Milyen színű a vér?", options: ["Zöld", "Kék", "Sárga", "Piros"], correctAnswer: 3 },
+    { question: "Mi a foglalkozása egy orvosnak?", options: ["Tanítás", "Építés", "Gyógyítás", "Festés"], correctAnswer: 2 },
+    { question: "Melyik a fővárosa az Amerikai Egyesült Államoknak?", options: ["New York", "Los Angeles", "Chicago", "Washington D.C."], correctAnswer: 3 },
+    { question: "Melyik olimpián nyert aranyérmet Egerszegi Krisztina először?", options: ["Szöul", "Barcelona", "Atlanta", "Sydney"], correctAnswer: 0 },
+    { question: "Mit iszunk, ha szomjasak vagyunk?", options: ["Kenyeret", "Vizet", "Levegőt", "Földet"], correctAnswer: 1 },
+    { question: "Hány betű van az angol ábécében?", options: ["24", "26", "28", "30"], correctAnswer: 1 },
+    { question: "Melyik állat él a vízben?", options: ["Madár", "Hal", "Mókus", "Nyúl"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb szín az égen egy napsütéses napon?", options: ["Fekete", "Szürke", "Zöld", "Kék"], correctAnswer: 3 },
+    { question: "Melyik az a gyümölcs, amiből a bor készül?", options: ["Alma", "Körte", "Szőlő", "Barack"], correctAnswer: 2 },
+    { question: "Melyik a világ hét csodájának egyike?", options: ["Eiffel-torony", "Gízai nagy piramis", "Szabadság-szobor", "Big Ben"], correctAnswer: 1 },
+    { question: "Milyen színű a hó?", options: ["Fekete", "Barna", "Zöld", "Fehér"], correctAnswer: 3 },
+    { question: "Melyik érzékszervünkkel hallunk?", options: ["Szem", "Fül", "Orr", "Nyelv"], correctAnswer: 1 },
+    { question: "Melyik az a tárgy, amivel hajat fésülünk?", options: ["Villa", "Kanál", "Fésű", "Kés"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb fém a Földön?", options: ["Arany", "Ezüst", "Vas", "Réz"], correctAnswer: 2 },
+    { question: "Melyik az a jármű, ami sínen közlekedik?", options: ["Busz", "Autó", "Vonat", "Repülő"], correctAnswer: 2 },
+    { question: "Melyik a legnagyobb sivatagi állat?", options: ["Skorpió", "Kígyó", "Teve", "Gyík"], correctAnswer: 2 },
+    { question: "Melyik az az égitest, ami éjszaka világít?", options: ["Nap", "Felhő", "Hold", " üstökös"], correctAnswer: 2 },
+    { question: "Melyik a legmagasabb fa a világon?", options: ["Tölgy", "Fenyő", "Juhar", "Vörösfenyő (sequoia)"], correctAnswer: 3 },
+    { question: "Melyik a világ legkisebb országa?", options: ["Monaco", "San Marino", "Vatikán", "Lichtenstein"], correctAnswer: 2 },
+    { question: "Melyik az az állat, ami a mézet készíti?", options: ["Darázs", "Légy", "Pók", "Méh"], correctAnswer: 3 },
+    { question: "Melyik az a szerv, ami a vért pumpálja a testben?", options: ["Tüdő", "Máj", "Vese", "Szív"], correctAnswer: 3 },
+    { question: "Melyik a leghidegebb kontinens?", options: ["Európa", "Ázsia", "Antarktisz", "Afrika"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb ital a világon a víz után?", options: ["Kávé", "Tea", "Coca-Cola", "Sör"], correctAnswer: 1 },
+    { question: "Melyik az a sport, amit lovon ülve játszanak?", options: ["Vívás", "Lovaglás", "Póló", "Golf"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb szemszín a világon?", options: ["Kék", "Zöld", "Barna", "Szürke"], correctAnswer: 2 },
+    { question: "Melyik az a tárgy, ami segít az olvasásban, ha rossz a szemünk?", options: ["Nagyító", "Távcső", "Mikroszkóp", "Szemüveg"], correctAnswer: 3 },
+    { question: "Melyik az az állat, amelyik a tojásait a fészekbe rakja?", options: ["Kutya", "Madár", "Béka", "Hal"], correctAnswer: 1 },
+    { question: "Melyik az a hónap, amelyik a legrövidebb?", options: ["Január", "Február", "Március", "Április"], correctAnswer: 1 },
+    { question: "Melyik az a hangszer, aminek húrjai vannak és pengetik?", options: ["Zongora", "Fuvola", "Dob", "Gitár"], correctAnswer: 3 },
+    { question: "Melyik az a bolygó, amelyiknek gyűrűi vannak?", options: ["Föld", "Mars", "Jupiter", "Szaturnusz"], correctAnswer: 3 },
+    { question: "Melyik az a tárgy, amivel a szögeket beverik a fába?", options: ["Fűrész", "Csavarhúzó", "Kalapács", "Fogó"], correctAnswer: 2 },
+           { question: "Melyik a leghidegebb évszak?", options: ["Nyár", "Tavasz", "Ősz", "Tél"], correctAnswer: 3 },
+    { question: "Mi a neve a Harry Potter varázslóiskolájának?", options: ["Durmstrang", "Beauxbatons", "Roxfort", "Ilvermorny"], correctAnswer: 2 },
+    { question: "Milyen színű a Télapó ruhája?", options: ["Zöld", "Kék", "Sárga", "Piros"], correctAnswer: 3 },
+    { question: "Melyik a legnagyobb szárazföldi állat?", options: ["Víziló", "Elefánt", "Orrszarvú", "Zsiráf"], correctAnswer: 1 },
+    { question: "Hány kontinens van a Földön?", options: ["5", "6", "7", "8"], correctAnswer: 2 },
+    { question: "Melyik ország a pizza szülőhazája?", options: ["Spanyolország", "Görögország", "Olaszország", "Franciaország"], correctAnswer: 2 },
+    { question: "Milyen állat volt Flipper a híres filmben?", options: ["Bálna", "Fóka", "Delfin", "Cápa"], correctAnswer: 2 },
+    { question: "Melyik mesében van egy beszélő szamár?", options: ["Oroszlánkirály", "Jégkorszak", "Madagaszkár", "Shrek"], correctAnswer: 3 },
+    { question: "Mi a Naprendszer középpontja?", options: ["Föld", "Hold", "Nap", "Jupiter"], correctAnswer: 2 },
+    { question: "Milyen színű egy smaragd?", options: ["Piros", "Kék", "Zöld", "Sárga"], correctAnswer: 2 },
+    { question: "Melyik városban játszódik a 'Jóbarátok' sorozat?", options: ["Los Angeles", "Chicago", "New York", "Boston"], correctAnswer: 2 },
+    { question: "Hány színből áll az olasz zászló?", options: ["2", "3", "4", "5"], correctAnswer: 1 },
+    { question: "Melyik az a sportág, amit a Wimbledon-on játszanak?", options: ["Golf", "Krikett", "Tenisz", "Lovaspóló"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb véralkohol-szintet mérő eszköz?", options: ["Hőmérő", "Barométer", "Szonda", "Távcső"], correctAnswer: 2 },
+    { question: "Melyik a legkisebb bolygó a Naprendszerben?", options: ["Mars", "Vénusz", "Merkúr", "Föld"], correctAnswer: 2 },
+    { question: "Ki volt a Római Birodalom első császára?", options: ["Julius Caesar", "Néró", "Augustus", "Caligula"], correctAnswer: 2 },
+    { question: "Melyik cég logója egy pipa?", options: ["Adidas", "Puma", "Reebok", "Nike"], correctAnswer: 3 },
+    { question: "Milyen állat szerepel Ausztrália címerében a strucc mellett?", options: ["Koala", "Kenguru", "Vombat", "Krokodil"], correctAnswer: 1 },
+    { question: "Mi a neve a híres festőnek, aki levágta a saját fülét?", options: ["Monet", "Picasso", "Van Gogh", "Dalí"], correctAnswer: 2 },
+    { question: "Melyik a legnépszerűbb videójáték karakter, aki vízvezeték-szerelő?", options: ["Sonic", "Link", "Pac-Man", "Mario"], correctAnswer: 3 },
+    { question: "Melyik a világ leghosszabb folyója?", options: ["Nílus", "Amazonas", "Jangce", "Mississippi"], correctAnswer: 0 },
+    { question: "Hány szív van egy polipnak?", options: ["1", "2", "3", "4"], correctAnswer: 2 },
+    { question: "Melyik a 'Fab Four' becenevű zenekar?", options: ["The Rolling Stones", "Queen", "The Beatles", "ABBA"], correctAnswer: 2 },
+    { question: "Melyik a Föld egyetlen természetes holdja?", options: ["Phobos", "Deimos", "Europa", "A Hold"], correctAnswer: 3 },
+    { question: "Mi a neve a Varázslatos iskolabusznak?", options: ["Kalandbusz", "Tudásbusz", "Varázsbusz", "Csodabusz"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb fűszer a világon?", options: ["Só", "Bors", "Cukor", "Paprika"], correctAnswer: 1 },
+    { question: "Ki írta a magyar Himnuszt?", options: ["Vörösmarty Mihály", "Petőfi Sándor", "Arany János", "Kölcsey Ferenc"], correctAnswer: 3 },
+    { question: "Melyik országban található a Tádzs Mahal?", options: ["Kína", "India", "Pakisztán", "Indonézia"], correctAnswer: 1 },
+    { question: "Milyen színű a Hulk?", options: ["Piros", "Kék", "Sárga", "Zöld"], correctAnswer: 3 },
+    { question: "Melyik a legkönnyebb nemesgáz?", options: ["Hélium", "Neon", "Argon", "Kripton"], correctAnswer: 0 },
+    { question: "Hány évig tartott a százéves háború?", options: ["100", "98", "116", "101"], correctAnswer: 2 },
+    { question: "Melyik a legnagyobb sziget a világon?", options: ["Borneó", "Madagaszkár", "Grönland", "Új-Guinea"], correctAnswer: 2 },
+    { question: "Melyik a 'Sárga Tengeralattjáró' című dal előadója?", options: ["Elvis Presley", "The Beach Boys", "The Beatles", "Bob Dylan"], correctAnswer: 2 },
+    { question: "Melyik az az ország, amelyiknek a zászlaja egyetlen piros kör egy fehér alapon?", options: ["Kína", "Dél-Korea", "Japán", "Vietnam"], correctAnswer: 2 },
+    { question: "Melyik a leggyorsabb vízi állat?", options: ["Cápa", "Delfin", "Vitorláskardoshal", "Tonhal"], correctAnswer: 2 },
+    { question: "Mi a neve a híres detektívnek, aki a Baker Street 221B-ben lakik?", options: ["Hercule Poirot", "Sherlock Holmes", "Philip Marlowe", "Sam Spade"], correctAnswer: 1 },
+    { question: "Hány csillag van az Európai Unió zászlaján?", options: ["10", "12", "15", "27"], correctAnswer: 1 },
+    { question: "Melyik a legkisebb óceán?", options: ["Atlanti-óceán", "Indiai-óceán", "Csendes-óceán", "Jeges-tenger"], correctAnswer: 3 },
+    { question: "Mi a neve a híres macskának, aki utálja a hétfőket?", options: ["Tom", "Szilveszter", "Garfield", "Felix"], correctAnswer: 2 },
+    { question: "Melyik az a sport, ahol a 'touchdown' kifejezést használják?", options: ["Baseball", "Kosárlabda", "Amerikai foci", "Jégkorong"], correctAnswer: 2 },
+    { question: "Melyik a leghosszabb csont az emberi testben?", options: ["Sípcsont", "Felkarcsont", "Gerinc", "Combcsont"], correctAnswer: 3 },
+    { question: "Melyik a világ legmagasabb épülete?", options: ["Shanghai Tower", "Empire State Building", "Burdzs Kalifa", "Petronas-tornyok"], correctAnswer: 2 },
+    { question: "Milyen hangszeren játszott Louis Armstrong?", options: ["Szaxofon", "Zongora", "Trombita", "Hegedű"], correctAnswer: 2 },
+    { question: "Melyik a Föld legszárazabb helye?", options: ["Szahara", "Góbi-sivatag", "Atacama-sivatag", "Antarktisz száraz völgyei"], correctAnswer: 3 },
+    { question: "Mi a neve a híres kalózkapitánynak a Karib-tenger kalózai filmekben?", options: ["Feketeszakáll", "Barbossa", "Jack Sparrow", "Davy Jones"], correctAnswer: 2 },
+    { question: "Melyik az az elem, ami a ceruzabélben található?", options: ["Ólom", "Grafit (Szén)", "Vas", "Cink"], correctAnswer: 1 },
+    { question: "Melyik a 'Jurassic Park' filmek fő attrakciója?", options: ["Sárkányok", "Robotok", "Dinoszauruszok", "Földönkívüliek"], correctAnswer: 2 },
+    { question: "Hány szarva van egy T-Rexnek?", options: ["0", "1", "2", "3"], correctAnswer: 0 },
+    { question: "Melyik a világ legnépszerűbb itala a víz után?", options: ["Kávé", "Coca-Cola", "Sör", "Tea"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb autó szín a világon?", options: ["Fekete", "Fehér", "Ezüst", "Piros"], correctAnswer: 1 },
+    { question: "Melyik testrészünkkel ízlelünk?", options: ["Orr", "Fül", "Szem", "Nyelv"], correctAnswer: 3 },
+    { question: "Melyik a legkisebb főemlős?", options: ["Törpemaki", "Mókusmajom", "Gibbon", "Pókmajom"], correctAnswer: 0 },
+    { question: "Melyik város híres a gondoláiról?", options: ["Amszterdam", "Velence", "Brugge", "Stockholm"], correctAnswer: 1 },
+    { question: "Mi Superman gyengesége?", options: ["Mágia", "Kriptonit", "Tűz", "Víz"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb nyelv a világon (anyanyelvi beszélők alapján)?", options: ["Angol", "Spanyol", "Hindi", "Mandarin kínai"], correctAnswer: 3 },
+    { question: "Melyik állat épít gátakat?", options: ["Vidra", "Pézsmapocok", "Hód", "Mormota"], correctAnswer: 2 },
+    { question: "Hány pontot ér egy kosár a kosárlabdában a hárompontos vonalon kívülről?", options: ["1", "2", "3", "4"], correctAnswer: 2 },
+    { question: "Melyik a Föld legforróbb kontinense?", options: ["Ausztrália", "Dél-Amerika", "Ázsia", "Afrika"], correctAnswer: 3 },
+    { question: "Melyik a 'Jedi' jó oldal a Star Wars-ban?", options: ["A Sötét Oldal", "A Világos Oldal", "A Semleges Oldal", "A Vörös Oldal"], correctAnswer: 1 },
+    { question: "Melyik az az ország, aminek a formája egy csizmára hasonlít?", options: ["Görögország", "Spanyolország", "Olaszország", "Portugália"], correctAnswer: 2 },
+    { question: "Melyik a legkisebb amerikai állam?", options: ["Delaware", "Connecticut", "New Jersey", "Rhode Island"], correctAnswer: 3 },
+    { question: "Melyik a 'The King of Pop' becenévre hallgató énekes?", options: ["Elvis Presley", "Michael Jackson", "Freddie Mercury", "Prince"], correctAnswer: 1 },
+    { question: "Hány szeme van egy küklopsznak?", options: ["Egy", "Kettő", "Három", "Négy"], correctAnswer: 0 },
+    { question: "Melyik a legnagyobb szerv az emberi testben?", options: ["Máj", "Agy", "Szív", "Bőr"], correctAnswer: 3 },
+    { question: "Melyik az a játék, ahol a cél a 'sakkmatt'?", options: ["Gó", "Dáma", "Sakk", "Malom"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb fafajta a világon?", options: ["Tölgy", "Juhar", "Fenyő", "Nyír"], correctAnswer: 2 },
+    { question: "Melyik a leggyorsabb rovar?", options: ["Szúnyog", "Légy", "Csótány", "Szitakötő"], correctAnswer: 3 },
+    { question: "Mi a neve a híres londoni óratoronynak?", options: ["Westminster-torony", "London Eye", "Tower", "Big Ben"], correctAnswer: 3 },
+    { question: "Melyik az a zöldség, ami a Popeye erejét adja?", options: ["Brokkoli", "Spenót", "Káposzta", "Uborka"], correctAnswer: 1 },
+    { question: "Melyik a legkisebb kutyafajta?", options: ["Tacskó", "Mopsz", "Csivava", "Yorkshire terrier"], correctAnswer: 2 },
+    { question: "Melyik a legnépszerűbb hangszer a világon?", options: ["Gitár", "Zongora", "Hegedű", "Dob"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb virág a világon?", options: ["Rózsa", "Tulipán", "Napraforgó", "Százszorszép"], correctAnswer: 0 },
+    { question: "Melyik a leggyakrabban használt betű az angol nyelvben?", options: ["A", "E", "I", "O"], correctAnswer: 1 },
+    { question: "Melyik a legmagasabb fűféle?", options: ["Búza", "Kukorica", "Rizs", "Bambusz"], correctAnswer: 3 },
+    { question: "Melyik az a sport, ahol a 'hole-in-one' a cél?", options: ["Tenisz", "Golf", "Bowling", "Baseball"], correctAnswer: 1 },
+    { question: "Melyik a legkisebb óceáni madár?", options: ["Albatrosz", "Sirály", "Pelikán", "Törpealka"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb ásvány a Földön?", options: ["Kvarc", "Gyémánt", "Arany", "Földpát"], correctAnswer: 0 },
+    { question: "Melyik az az ország, ahol a legtöbb időzóna van?", options: ["Oroszország", "USA", "Kanada", "Franciaország"], correctAnswer: 3 },
+    { question: "Melyik a leghosszabb ideig élő állat?", options: ["Teknős", "Bálna", "Elefánt", "Grönlandi cápa"], correctAnswer: 3 },
+    { question: "Melyik a legnépszerűbb gyorsétterem lánc a világon?", options: ["Burger King", "KFC", "Subway", "McDonald's"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb hajszín a világon?", options: ["Szőke", "Vörös", "Fekete", "Barna"], correctAnswer: 2 },
+    { question: "Melyik a legkisebb emlős a világon?", options: ["Egér", "Denevér", "Cickány", "Dongódenevér"], correctAnswer: 3 },
+    { question: "Melyik a leggyakrabban termesztett gyümölcs a világon?", options: ["Alma", "Banán", "Narancs", "Paradicsom (botanikailag)"], correctAnswer: 3 },
+    { question: "Melyik a leggyorsabban növő növény?", options: ["Fa", "Fű", "Bambusz", "Kaktusz"], correctAnswer: 2 },
+    { question: "Melyik a legnépszerűbb hangszeres zenei műfaj?", options: ["Klasszikus", "Jazz", "Blues", "Rock"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb fém az emberi testben?", options: ["Vas", "Kalcium", "Cink", "Réz"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb vallás a világon?", options: ["Iszlám", "Hinduizmus", "Kereszténység", "Buddizmus"], correctAnswer: 2 },
+    { question: "Melyik a legkisebb ország Dél-Amerikában?", options: ["Uruguay", "Paraguay", "Suriname", "Ecuador"], correctAnswer: 2 },
+    { question: "Melyik a leggyakrabban beszélt germán nyelv?", options: ["Német", "Holland", "Svéd", "Angol"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb szemprobléma?", options: ["Zöldhályog", "Szürkehályog", "Rövidlátás", "Távollátás"], correctAnswer: 2 },
+    { question: "Melyik a legkisebb afrikai ország?", options: ["Gambia", "Szváziföld", "Comore-szigetek", "Seychelle-szigetek"], correctAnswer: 3 },
+    { question: "Melyik a legnépszerűbb sportág a világon (nézőszám alapján)?", options: ["Kosárlabda", "Krikett", "Futball", "Tenisz"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb műanyag a világon?", options: ["PVC", "PET", "Polietilén", "Polipropilén"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb autó márka a világon (eladások alapján)?", options: ["Ford", "Volkswagen", "Toyota", "Honda"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb csillag a Tejútrendszerben?", options: ["Kék óriás", "Fehér törpe", "Vörös törpe", "Sárga törpe"], correctAnswer: 2 },
+    { question: "Melyik a leggyakrabban használt programozási nyelv a weben?", options: ["Python", "Java", "C++", "JavaScript"], correctAnswer: 3 },
+    { question: "Melyik a legkisebb ázsiai ország?", options: ["Szingapúr", "Brunei", "Bahrein", "Maldív-szigetek"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb hal a világ óceánjaiban?", options: ["Tonhal", "Lazac", "Hering", "Tőkehal"], correctAnswer: 2 },
+    { question: "Melyik a legnépszerűbb kutyafajta a világon?", options: ["Németjuhász", "Golden Retriever", "Francia bulldog", "Labrador Retriever"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb fa Európában?", options: ["Tölgy", "Bükk", "Erdeifenyő", "Nyírfa"], correctAnswer: 2 },
+    { question: "Melyik az a bolygó, amit a 'Reggeli csillagként' is ismerünk?", options: ["Mars", "Vénusz", "Merkúr", "Jupiter"], correctAnswer: 1 },
+    { question: "Mi a neve a híres varázslónak A Gyűrűk Ura történetekben?", options: ["Szauron", "Szilszakáll", "Gandalf", "Dumbledore"], correctAnswer: 2 },
+    { question: "Melyik állat alszik a legtöbbet egy nap?", options: ["Lajhár", "Koala", "Oroszlán", "Macska"], correctAnswer: 1 },
+    { question: "Hány szívkamrája van az embernek?", options: ["Egy", "Kettő", "Három", "Négy"], correctAnswer: 3 },
+    { question: "Melyik a világ legnagyobb kávétermelő országa?", options: ["Kolumbia", "Vietnam", "Etiópia", "Brazília"], correctAnswer: 3 },
+    { question: "Melyik az a mitológiai lény, aminek ló teste és emberi felsőteste van?", options: ["Kentaur", "Minotaurusz", "Griff", "Szatír"], correctAnswer: 0 },
+    { question: "Hány pontot ér egy 'szett' a teniszben?", options: ["15", "30", "40", "Nem pontozzák"], correctAnswer: 3 },
+    { question: "Melyik a legkisebb csont az emberi testben?", options: ["Ujjperc", "Lábujjperc", "Kengyel (fülben)", "Orrcsont"], correctAnswer: 2 },
+    { question: "Melyik a világ legészakibb fővárosa?", options: ["Oslo", "Helsinki", "Stockholm", "Reykjavík"], correctAnswer: 3 },
+    { question: "Melyik a 'Queen' zenekar énekese volt?", options: ["John Lennon", "Mick Jagger", "Freddie Mercury", "Elton John"], correctAnswer: 2 },
+    { question: "Melyik az egyetlen emlős, ami képes repülni?", options: ["Repülőmókus", "Denevér", "Kolibri", "Siklóerszényes"], correctAnswer: 1 },
+    { question: "Melyik a világ legmagasabb vízesése?", options: ["Niagara-vízesés", "Viktória-vízesés", "Angel-vízesés", "Iguazú-vízesés"], correctAnswer: 2 },
+    { question: "Mi a neve Micimackó legjobb barátjának?", options: ["Tigris", "Füles", "Malacka", "Zsebibaba"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb elem az univerzumban?", options: ["Oxigén", "Szén", "Hélium", "Hidrogén"], correctAnswer: 3 },
+    { question: "Melyik a leghosszabb ideig tartó olimpia?", options: ["Nyári", "Téli", "Paralimpia", "Ifjúsági"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb művészeti stílus a világon?", options: ["Reneszánsz", "Barokk", "Impresszionizmus", "Realizmus"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb név a világon?", options: ["James", "John", "Mohamed", "David"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb autóbaleset oka?", options: ["Gyorshajtás", "Ittas vezetés", "Figyelmetlenség", "Műszaki hiba"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb betegség a világon?", options: ["Nátha", "Influenza", "Fogszuvasodás", "Fejfájás"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb természetes katasztrófa?", options: ["Földrengés", "Tornádó", "Árvíz", "Cunami"], correctAnswer: 2 },
+    { question: "Melyik a legkisebb ország Afrikában (szárazföldön)?", options: ["Gambia", "Szváziföld", "Lesotho", "Ruanda"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb állat a Földön (darabszámra)?", options: ["Ember", "Hangya", "Csirke", "Krill (rák)"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb ásványi anyag az emberi testben?", options: ["Vas", "Kálium", "Nátrium", "Kalcium"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb nyelv az interneten?", options: ["Kínai", "Spanyol", "Angol", "Hindi"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb étel a világon?", options: ["Pizza", "Hamburger", "Rizs", "Tészta"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb fa Amerikában?", options: ["Tölgy", "Juhar", "Vörös éger", "Fenyő"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb szín a nemzeti zászlókon?", options: ["Kék", "Zöld", "Sárga", "Piros"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb utónév Magyarországon?", options: ["László", "István", "József", "János"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb madár a világon?", options: ["Galamb", "Veréb", "Csirke", "Sirály"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb vércsoport?", options: ["A", "B", "AB", "0"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb félelem (fóbia)?", options: ["Magasság", "Pókok", "Kígyók", "Zárt helyek"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb sport a téli olimpián?", options: ["Síelés", "Jégkorong", "Műkorcsolya", "Bob"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb fa a kertekben?", options: ["Almafa", "Körtefa", "Cseresznyefa", "Diófa"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb virág a vágott virágok piacán?", options: ["Tulipán", "Liliom", "Szegfű", "Rózsa"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb szám a lottón?", options: ["7", "11", "23", "Nincs ilyen"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb kávéfajta?", options: ["Arabica", "Robusta", "Liberica", "Excelsa"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb forma a természetben?", options: ["Négyzet", "Háromszög", "Spirál", "Kör"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb hiba a kezdő szakácsoknál?", options: ["Túlfőzés", "Alulfőzés", "Túlsózás", "Égetés"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb kérdés a gyerekektől?", options: ["Miért?", "Mi ez?", "Hova megyünk?", "Mit csinálsz?"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb szó a magyar nyelvben?", options: ["A/Az", "És", "Hogy", "Nem"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb internetes keresés?", options: ["Időjárás", "Hírek", "Facebook", "Google"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb álom téma?", options: ["Repülés", "Zuhanás", "Üldözés", "Vizsga"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb ok a válásra?", options: ["Pénz", "Hűtlenség", "Kommunikációs problémák", "Családi viták"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb babanév a világon?", options: ["Sophia", "Olivia", "Noah", "Liam"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb ok a mobiltelefon cserére?", options: ["Akkumulátor", "Törött képernyő", "Lassulás", "Újabb modell"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb pizza feltét?", options: ["Szalámi", "Sonka", "Gomba", "Pepperoni"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb ok a késésre?", options: ["Forgalom", "Elalvás", "Tömegközlekedés", "Idő rossz beosztása"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb sérülés a sportban?", options: ["Törés", "Zúzódás", "Ficam", "Rándulás"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb ok az orvoslátogatásra?", options: ["Megfázás", "Bőrproblémák", "Fejfájás", "Hátfájás"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb karácsonyi ajándék?", options: ["Könyv", "Parfüm", "Ruha", "Édesség"], correctAnswer: 2 },
+      { question: "Melyik az egyetlen emlős, ami nem tud ugrani?", options: ["Elefánt", "Víziló", "Orrszarvú", "Zsiráf"], correctAnswer: 0 },
+    { question: "Melyik a világ legkisebb független állama?", options: ["Monaco", "Nauru", "Tuvalu", "Vatikán"], correctAnswer: 3 },
+    { question: "Mi a neve a híres skót tószörnynek?", options: ["Kraken", "Godzilla", "Nessie", "Moby Dick"], correctAnswer: 2 },
+    { question: "Hány szíve van egy földigilisztának?", options: ["0", "1", "3", "5"], correctAnswer: 3 },
+    { question: "Melyik országban található a Fuji hegy?", options: ["Kína", "Dél-Korea", "Japán", "Thaiföld"], correctAnswer: 2 },
+    { question: "Melyik a leggyorsabb állat a Földön (a levegőt is beleértve)?", options: ["Gepárd", "Vándorsólyom", "Fekete marlin", "Denevér"], correctAnswer: 1 },
+    { question: "Melyik a leggyakrabban használt emoji a világon?", options: ["Szív", "Nevető arc", "Síró-nevető arc", "Hüvelykujj fel"], correctAnswer: 2 },
+    { question: "Hány játékos van egy jégkorong csapatban a pályán egyszerre?", options: ["5", "6", "7", "11"], correctAnswer: 1 },
+    { question: "Melyik a legkönnyebb fém?", options: ["Alumínium", "Titán", "Magnézium", "Lítium"], correctAnswer: 3 },
+    { question: "Mi a neve a Marvel képregényekben szereplő zöld szörnynek?", options: ["A Lény", "Hulk", "Venom", "Thanos"], correctAnswer: 1 },
+    { question: "Melyik a legnagyobb sziget a Földközi-tengerben?", options: ["Ciprus", "Szardínia", "Korzika", "Szicília"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb műtét a világon?", options: ["Vakbélműtét", "Szürkehályog műtét", "Mandulaműtét", "Császármetszés"], correctAnswer: 1 },
+    { question: "Melyik a világ leghosszabb hídja?", options: ["Akashi Kaikyo híd", "Golden Gate híd", "Tanyang-Kunshan Nagy Híd", "Millau-i völgyhíd"], correctAnswer: 2 },
+    { question: "Mi a neve a híres macskának és egérnek a rajzfilmekből?", options: ["Szilveszter és Csőrike", "Tom és Jerry", "Garfield és Odie", "Mickey és Minnie"], correctAnswer: 1 },
+    { question: "Melyik a leggyakrabban fogyasztott hús a világon?", options: ["Marha", "Csirke", "Sertés", "Bárány"], correctAnswer: 2 },
+    { question: "Melyik az egyetlen madár, ami hátrafelé is tud repülni?", options: ["Kolibri", "Sirály", "Sas", "Veréb"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb ásvány a Holdon?", options: ["Vas", "Titán", "Plagioklász földpát", "Kvarc"], correctAnswer: 2 },
+    { question: "Hány pontot ér egy 'bullseye' a dartsban?", options: ["20", "25", "50", "100"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb elem a Napban?", options: ["Hélium", "Oxigén", "Hidrogén", "Szén"], correctAnswer: 2 },
+    { question: "Melyik a legnépszerűbb streaming szolgáltató?", options: ["HBO Max", "Disney+", "Amazon Prime", "Netflix"], correctAnswer: 3 },
+    { question: "Melyik az a hangszer, amit fújnak és fémből van?", options: ["Klarinét", "Fuvola", "Oboa", "Trombita"], correctAnswer: 3 },
+    { question: "Melyik a leggyakrabban használt fűszernövény?", options: ["Petrezselyem", "Bazsalikom", "Oregánó", "Kapor"], correctAnswer: 0 },
+    { question: "Melyik a legkisebb kontinens lakosság szerint?", options: ["Ausztrália", "Dél-Amerika", "Antarktisz", "Európa"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb természetes hajszín Írországban?", options: ["Szőke", "Fekete", "Vörös", "Barna"], correctAnswer: 3 },
+    { question: "Melyik a legnépszerűbb társasjáték a világon?", options: ["Monopoly", "Sakk", "Scrabble", "Rizikó"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb szuperképesség a képregényekben?", options: ["Repülés", "Emberfeletti erő", "Láthatatlanság", "Gyorsaság"], correctAnswer: 1 },
+    { question: "Melyik a leggyakrabban használt jelszó a világon?", options: ["password", "123456", "qwerty", "111111"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb virágszín?", options: ["Piros", "Sárga", "Fehér", "Kék"], correctAnswer: 2 },
+    { question: "Melyik a leggyakrabban elfelejtett dolog?", options: ["Kulcsok", "Telefon", "Pénztárca", "Szemüveg"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb háztartási baleset?", options: ["Vágás", "Égés", "Megcsúszás/esés", "Mérgezés"], correctAnswer: 2 },
+    { question: "Melyik a leggyakrabban letöltött applikáció?", options: ["Facebook", "Instagram", "WhatsApp", "TikTok"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb elem a Föld magjában?", options: ["Nikkel", "Oxigén", "Szilícium", "Vas"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb fa Oroszországban?", options: ["Nyír", "Vörösfenyő", "Tölgy", "Juhar"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb ital egy bárban?", options: ["Bor", "Sör", "Pálinka", "Víz"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb forma a méhkasban?", options: ["Négyzet", "Kör", "Hatszög", "Ötszög"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb programozási hiba?", options: ["Szintaktikai hiba", "Logikai hiba", "Elírás", "Végtelen ciklus"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb ok a repülőjáratok késésére?", options: ["Műszaki hiba", "Időjárás", "Légi irányítás", "Későn érkező gép"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb kutyanév?", options: ["Buksi", "Fifi", "Max", "Bella"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb félelem az állatoktól?", options: ["Kutyáktól", "Macskáktól", "Pókoktól", "Kígyóktól"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb sport a nyári olimpián?", options: ["Úszás", "Atlétika", "Torna", "Kerékpározás"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb szemüvegkeret-anyag?", options: ["Fém", "Műanyag", "Fa", "Titán"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb ok az erdőtüzekre?", options: ["Villámcsapás", "Gondatlanság (emberi)", "Szándékos gyújtogatás", "Természetes öngyulladás"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb fa a bútorgyártásban?", options: ["Fenyő", "Tölgy", "Bükk", "Juhar"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb kávé típus (elkészítés szerint)?", options: ["Eszpresszó", "Hosszú kávé", "Cappuccino", "Latte"], correctAnswer: 0 },
+    { question: "Melyik a leggyakrabban látogatott weboldal?", options: ["Facebook", "YouTube", "Amazon", "Google"], correctAnswer: 3 },
+    { question: "Melyik a leggyakoribb ok a telefonhívásra?", options: ["Információkérés", "Időpont egyeztetés", "Panasz", "Üdvözlés"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb álom helyszín?", options: ["Iskola", "Munkahely", "Régi otthon", "Ismeretlen hely"], correctAnswer: 2 },
+    { question: "Melyik a leggyakoribb ok a vitára egy párkapcsolatban?", options: ["Pénz", "Féltékenység", "Házimunka", "Család"], correctAnswer: 0 },
+    { question: "Melyik a leggyakoribb pizza méret?", options: ["Kicsi (26cm)", "Normál (32cm)", "Nagy (45cm)", "Családi (60cm)"], correctAnswer: 1 },
+    { question: "Melyik a leggyakoribb sérülés otthon?", options: ["Vágás", "Égés", "Elesés", "Ütés"], correctAnswer: 0 },
+            { question: "Mi Japán fővárosa?", options: ["Peking", "Szöul", "Tokió", "Bangkok"], correctAnswer: 2 },
+            { question: "Hány bolygó van a Naprendszerünkben?", options: ["7", "8", "9", "10"], correctAnswer: 1 },
+            { question: "Ki írta a 'Hamlet' című drámát?", options: ["Charles Dickens", "Lev Tolsztoj", "William Shakespeare", "Homérosz"], correctAnswer: 2 },
+            { question: "Mi az arany vegyjele?", options: ["Ag", "Au", "Fe", "Pb"], correctAnswer: 1 },
+            { question: "Melyik a legkisebb óceán?", options: ["Indiai-óceán", "Atlanti-óceán", "Jeges-tenger", "Déli-óceán"], correctAnswer: 2 },
+            { question: "Melyik állat az USA nemzeti jelképe?", options: ["Bölény", "Fehérfejű rétisas", "Grizzly medve", "Puma"], correctAnswer: 1 },
+            { question: "Hány karika van az olimpiai zászlón?", options: ["4", "5", "6", "7"], correctAnswer: 1 },
+            { question: "Mi a guacamole fő összetevője?", options: ["Paradicsom", "Hagyma", "Avokádó", "Lime"], correctAnswer: 2 },
+            { question: "Ki festette a Sixtus-kápolna mennyezetét?", options: ["Raffaello", "Donatello", "Leonardo da Vinci", "Michelangelo"], correctAnswer: 3 },
+            { question: "Melyik országban található a Nagy Fal?", options: ["Japán", "India", "Mongólia", "Kína"], correctAnswer: 3 },
+        ];
 
-        const mainGameData = [
-            { question: "Nevezz meg egy dolgot, ami egy kanapé alatt lehet!", answers: { "por": 45, "pénz": 25, "játék": 15, "távirányító": 10, "morzsa": 5 } },
+        const mainGameData = [ 
+        { question: "Nevezz meg egy dolgot, ami egy kanapé alatt lehet!", answers: { "por": 45, "pénz": 25, "játék": 15, "távirányító": 10, "morzsa": 5 } },
     { question: "Mondj egy okot, amiért felhívsz valakit telefonon!", answers: { "megkérdezni hogy van": 40, "segítséget kérni": 25, "találkozót megbeszélni": 15, "szülinapot kívánni": 12, "pletykálni": 8 } },
     { question: "Nevezz meg egy sajtfajtát!", answers: { "trappista": 50, "ementáli": 20, "cheddar": 15, "parmezán": 10, "camembert": 5 } },
     { question: "Mondj egy dolgot, amit egy hot dogra teszel!", answers: { "mustár": 45, "ketchup": 30, "majonéz": 10, "pirított hagyma": 8, "uborka": 7 } },
@@ -570,213 +1023,97 @@
     { question: "Mondj egy dolgot, amit egy légkalapács csinál!", answers: { "zajt": 40, "feltöri az aszfaltot": 35, "port": 10, "rezeg": 8, "lyukat készít": 7 } },
     { question: "Nevezz meg egy dolgot, ami egy szemetesautóban van!", answers: { "szemét": 40, "szemeteszsák": 25, "szag": 15, "prés": 12, "kukás": 8 } },
     { question: "Mondj egy okot, amiért valaki elájul!", answers: { "vér látványa": 40, "nagy fájdalom": 25, "ijedtség": 15, "nagy meleg": 12, "levegőhiány": 8 } },
- ]; 
-        // --- DOM ELEMEK ---
-        const startContainer = document.getElementById('start-container');
-        const gameContainer = document.getElementById('game-container');
-        const questionEl = document.getElementById('question');
-        const boardEl = document.getElementById('board');
-        const scoreEl = document.getElementById('score');
-        const guessInput = document.getElementById('guess-input');
-        const guessButton = document.getElementById('guess-button');
-        const nextRoundButton = document.getElementById('next-round-button');
-        const buttonContainer = document.getElementById('button-container');
-        const strikes = [document.getElementById('strike1'), document.getElementById('strike2'), document.getElementById('strike3')];
-        const playedBlockTimeEl = document.getElementById('played-block-time');
-        const notificationBar = document.getElementById('notification-bar');
-
-        // --- JÁTÉK ÁLLAPOT ---
-        let currentQuestions = [];
-        let currentQuestionIndex = -1;
-        let currentAnswers = {};
-        let revealedAnswers = [];
-        let currentStrikes = 0;
-        let score = 0;
-        // === ÚJ ÁLLAPOTVÁLTOZÓK ===
-        let currentStreak = 0;
-        let isDoublePointsRound = false;
+            { question: "Mondj egy dolgot, amit egy iskolatáskában találsz!", answers: { "Könyv": 40, "Füzet": 30, "Toll": 15, "Tolltartó": 8, "Vonalzó": 5, "Radír": 2 } },
+            { question: "Nevezz meg egy népszerű pizzafeltétet!", answers: { "Sonka": 35, "Gomba": 25, "Szalámi": 20, "Kukorica": 12, "Sajt": 6, "Ananász": 2 } },
+            { question: "Mondj egy dolgot, amit nyaraláskor csinálsz!", answers: { "Fürdés": 33, "Napozás": 28, "Városnézés": 18, "Pihenés": 11, "Evés": 7, "Olvasás": 3 } },
+            { question: "Nevezz meg egy időjárási jelenséget!", answers: { "Eső": 42, "Napsütés": 25, "Hó": 15, "Szél": 10, "Villámlás": 6, "Köd": 2 } },
+            { question: "Mondj egy dolgot, ami hideg!", answers: { "Jég": 45, "Hó": 28, "Víz": 12, "Fagylalt": 9, "Fém": 4, "Tél": 2 } },
+            { question: "Nevezz meg egy gyümölcsöt!", answers: { "Alma": 38, "Banán": 29, "Narancs": 16, "Szőlő": 9, "Eper": 5, "Körte": 3 } },
+            { question: "Mondj egy tárgyat a konyhából!", answers: { "Tányér": 30, "Pohár": 25, "Villa": 20, "Kés": 13, "Lábas": 8, "Kanál": 4 } },
+            { question: "Nevezz meg egy foglalkozást, amihez egyenruha kell!", answers: { "Rendőr": 41, "Tűzoltó": 27, "Katona": 14, "Orvos": 9, "Pincér": 6, "Postás": 3 } },
+            { question: "Mondj egy dolgot, amit egy cirkuszban láthatsz!", answers: { "Bohóc": 36, "Oroszlán": 26, "Elefánt": 17, "Akrobata": 11, "Zsonglőr": 7, "Sátor": 3 } },
+            { question: "Mondj egy okot, amiért telefonálsz!", answers: { "Üdvözlés": 32, "Információkérés": 28, "Segélyhívás": 19, "Időpont egyeztetés": 11, "Rendelés": 6, "Pletyka": 4 } },
+        ];
         
-        const GAME_INTERVAL_MS = 15 * 60 * 1000;
-
-        // --- SEGÉDFÜGGVÉNYEK ---
-        function normalizeText(text) { return text.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
-        function updateScoreDisplay() { scoreEl.textContent = score; }
-        function mulberry32(a) { return function() { var t = a += 0x6D2B79F5; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; } }
-        function shuffleArray(array, randomFunc) { let currentIndex = array.length, randomIndex; while (currentIndex != 0) { randomIndex = Math.floor(randomFunc() * currentIndex); currentIndex--; [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]]; } return array; }
+        // --- EREDETI JÁTÉKLOGIKA ---
+        const synonymMap = { "auto": ["kocsi", "gepjarmu", "automobil", "verda", "jargany"], "repulo": ["repulogep", "gepmadar", "szarnyasgep"], "vonat": ["szerelveny", "vasut"], "bicikli": ["kerekpar", "bringa", "canga"], "hajo": ["csonak", "lada", "uszaly"], "telefon": ["mobil", "mobiltelefon", "keszulek"], "szamitogep": ["komputer", "pc", "laptop", "notebook"], "televizio": ["teve", "tv", "keszulek"], "konyv": ["olvasmany", "mu", "kotet"], "toll": ["iroeszkoz", "golyostoll"], "ceruza": ["grafit", "grafitceruza"], "kulcs": ["slusszkulcs", "lakaskulcs"], "penz": ["love", "zseton", "cash", "valuta", "fizetoeszkoz", "steksz"], "szemetes": ["kuka", "hulladekgyujto", "szemeteslada"], "haz": ["otthon", "epulet", "ingatlan", "lakas"], "lakas": ["apartman", "garzon", "otthon"], "ajto": ["kapu", "bejarat"], "ablak": ["uveg", "nyilaszaró"], "agy": ["fekvohely", "nyugagy"], "szek": ["uloalkalmatossag", "fotel", "pad"], "asztal": ["butor", "iroasztal", "etkezoasztal"], "lampa": ["vilagitas", "ego", "csillar"], "szekreny": ["gardrob", "butor"], "szappan": ["mosakodoszer", "tisztalkodoszer"], "fogkefe": ["foghienoeszkoz"], "ruha": ["oltozek", "viselet", "holmi", "cucc"], "cipo": ["labbali", "surrano", "topan"], "kalapacs": ["szerszam", "veso"], "csavarhuzo": ["szerszam", "behajto"], "furesz": ["szerszam", "vagoeszkoz"], "ember": ["szemely", "leny", "ferfi", "no"], "ferfi": ["pasas", "csavo", "srac"], "no": ["holgy", "csaj", "leany"], "gyerek": ["gyermek", "kolyok", "csemete"], "barat": ["haver", "cimbora", "pajtas"], "orvos": ["doktor", "doki", "medikus"], "rendor": ["zsernyak", "zsaru", "szerv"], "tanar": ["oktato", "pedagogus", "tanito"], "szakacs": ["seff", "konyhafonok"], "katona": ["bajtars", "harcos"], "etel": ["elelem", "elelmiszer", "ennivalo", "kaja"], "ital": ["innivalo", "folyadek"], "viz": ["folyadek", "ivoviz"], "kenyer": ["cipó", "pekáru"], "szendvics": ["uzsonna", "tizorai"], "husleves": ["tyukhusleves", "marhahusleves"], "gulyasleves": ["gulyas"], "halaszle": ["halpaprikas"], "csokolade": ["csoki", "edesseg"], "cukorka": ["cukor", "edesseg", "nyaloka"], "fagylalt": ["fagyi", "jegkrem"], "torta": ["sutemeny", "edesseg"], "kave": ["fekete", "eszpresszo", "presszokave"], "sor": ["ser", "sör"], "bor": ["nedű", "nektar"], "kutya": ["eb", "bloki", "kutyus", "kope"], "macska": ["cica", "cicus", "masni"], "lo": ["paripa", "hatas"], "diszno": ["sertes", "rofi", "malac"], "madar": ["szarnyas", "repulo allat"], "hal": ["viziallat"], "erdo": ["rengeteg", "liget"], "hegy": ["csucs", "orom"], "folyo": ["folyam", "vizfolyas"], "to": ["alloviz", "tavacska"], "tenger": ["ocean", "viz"], "varos": ["telepules", "nagyvaros"], "falu": ["telepules", "kozseg"], "utca": ["ut", "setany"], "strand": ["part", "furdohely", "plazs"], "iskola": ["tanev", "oktatasi intezmeny", "suli"], "korhaz": ["klinika", "gyogyintezet", "szanatorium"], "bolt": ["uzlet", "kereskedes"], "szerelem": ["szeretet", "rajongas", "vonzalom"], "boldogsag": ["orom", "vidamsag", "elegedettseg"], "felelem": ["retteges", "paranoia", "fobia"], "harc": ["kuzdelem", "csata", "utkozet"], "munka": ["allas", "hivatas", "meló"], "jatek": ["szorakozas", "időtöltés"], "sport": ["mozgas", "testmozgas"], "zene": ["muzsika", "dallam"], "film": ["mozi", "alkotas"], "szin": ["arnyalat", "kolorit"], "piros": ["voros", "veres"], "kek": ["egszinkek"], "sarga": ["citromsarga"], "feher": ["hófehér"], "fekete": ["koromfekete"], "aludni": ["szunyalni", "horpasztani", "durni"], "olvasni": ["betuzni", "bongeszni"], "nadrag": ["pantalon", "farmernadrag", "farmer"], "polo": ["felso", "T-shirt", "triko"], "ing": ["bluz", "felso"], "szoknya": ["mini", "maxi"], "kabát": ["dzseki", "felkabát", "zakó"], "sapka": ["kalap", "fedor", "barett"], "sal": ["nyakmelegito", "kendő"], "kesztyu": ["otujjas"], "zokni": ["harisnya", "titokzokni"], "szemuveg": ["brill", "látásjavító", "pápaszem"], "ora": ["karora", "idomero"], "taska": ["szatyor", "hatizsak", "borond"], "fej": ["kobak", "bura"], "haj": ["frizura", "sörény"], "szem": ["latoszerv", "tekintet"], "ful": ["halloszerv"], "orr": ["szagloszerv"], "szaj": ["csor", "pofazacsko"], "kez": ["mancs", "végtag"], "lab": ["csulok", "végtag"], "sziv": ["kardio", "pumpa"], "betegseg": ["kor", "nyavalya", "jarvany"], "gyogyszer": ["pirula", "orvossag", "tabletta"], "fajdalom": ["szenvedes", "kín"], "etterem": ["vendeglo", "bisztro", "kifozde", "csarda"], "kocsma": ["sorozo", "borozó", "pub"], "mozi": ["filmszinhaz"], "szinhaz": ["jatszohely"], "muzeum": ["kiallitas", "galeria", "keptar"], "konyvtar": ["olvasoterem"], "park": ["kert", "liget"], "jatszoter": ["homokozo"], "templom": ["egyhaz", "bazilika", "imola"], "repuloter": ["legi kikoto"], "palyaudvar": ["allomas", "vasutallomas"], "hid": ["viadukt", "athidalo"], "fogo": ["csipesz", "harapofogo"], "furo": ["furogep"], "villa": ["etkezoeszkoz"], "kanal": ["etkezoeszkoz"], "kes": ["bicska", "vagoeszkoz"], "tanyer": ["tal", "edény"], "pohar": ["uvegpohar", "bogre"], "ollo": ["vagoeszkoz"], "uveg": ["palack", "flakon"], "fa": ["noveny", "facsemete", "lombkorona"], "virag": ["noveny", "viragszal"], "fu": ["gyep", "pazsit"], "eso": ["csapadek", "zapor"], "ho": ["csapadek", "hópehely"], "szel": ["fuvallat", "vihar", "szelet"], "nap": ["csillag", "napsugar"], "hold": ["egitest", "holdfeny"], "csillag": ["egitest", "fenypont"], "felho": ["para", "gomolyfelho"], "otlet": ["gondolat", "eszme", "elgondolas"], "hiba": ["tevedes", "baki", "elnezes"], "segitseg": ["tamogatas", "keznyujtas"], "beszelgetes": ["parbeszed", "cseveges", "diskurzus", "tarsalgas"], "kerdes": ["felvetes", "problema"], "valasz": ["felelet", "reakcio"], "tudás": ["ismeret", "muveltseg", "intelligencia"], "ero": ["energia", "potencia"], "gyorsasag": ["sebesseg", "tempó"], "szepseg": ["csinossag", "báj"], "utazas": ["kirandulas", "nyaralas", "tura"], "tanulas": ["kepzes", "oktatas"], "enni": ["etkezni", "falatozni", "majszolni"], "inni": ["folyadekot fogyasztani", "kortyolni"], "nezni": ["latni", "pillantani", "bamulni"], "hallgatni": ["figyelni", "fulelni"], "futni": ["szaladni", "rohanni", "iramodni"], "irni": ["jegyezni", "firkalni", "fogalmazni"], "nevetni": ["kacagni", "mosolyogni", "vihogni"], "sirni": ["konnyezni", "zokogni", "pityeregni"], "harag": ["duh", "mereg", "indulat"], "szomorusag": ["banat", "csuggedes", "melankolia"], "elet": ["letezes", "egzisztencia"], "halal": ["veg", "elhunyas", "mulandosag"], "ido": ["pillanat", "perc", "ora"],
+        };
         
-        // === ÚJ: NOTIFIKÁCIÓS FÜGGVÉNY ===
-        let notificationTimeout;
+        const bodyEl=document.body,appContainer=document.getElementById('app-container'),mainWrapper=document.getElementById('main-wrapper'),startContainer=document.getElementById('start-container'),gameContainer=document.getElementById('game-container'),guessesContainer=document.getElementById('guesses-container'),
+        guessesListEl=document.getElementById('guesses-list'),questionEl=document.getElementById('question'),boardEl=document.getElementById('board'),scoreEl=document.getElementById('score'),
+        guessInput=document.getElementById('guess-input'),guessButton=document.getElementById('guess-button'),nextRoundButton=document.getElementById('next-round-button'),
+        buttonContainer=document.getElementById('button-container'),strikesContainer=document.getElementById('strikes'),strikes=[document.getElementById('strike1'),document.getElementById('strike2'),document.getElementById('strike3')],
+        playedBlockTimeEl=document.getElementById('played-block-time'),notificationBar=document.getElementById('notification-bar'),timerDisplay=document.getElementById('timer-display'),roundTimerBox = document.getElementById('round-timer-box'),roundTimerEl = document.getElementById('round-timer'),
+        roundInfoBox = document.getElementById('round-info-box'),
+        grandPrizeContainer=document.getElementById('grand-prize-container'),evaluationContainer=document.getElementById('evaluation-container'),gpTimerEl=document.getElementById('gp-timer'),
+        gpQuestionTextEl=document.getElementById('gp-question-text'),gpOptionsAreaEl=document.getElementById('gp-options-area'),gpProgressFillEl=document.getElementById('gp-progress-fill'),
+        evalSummaryEl=document.getElementById('evaluation-summary'),evalListEl=document.getElementById('evaluation-list'),backToStartBtn=document.getElementById('back-to-start-btn');
+
+        let currentQuestions=[],currentQuestionIndex=-1,currentAnswers={},revealedAnswers=[],currentStrikes=0,score=0,currentStreak=0,dailyScore=0;
+        const GAME_INTERVAL_MS=15*60*1000,ROUND_DURATION=30; 
+        let roundScore=0,goldenAnswer=null,isDoublePointsRound=false,isTimePanicRound=false,timePanicTimer=null,timeRemaining=0,isForditoRound=false,roundTimer=null,roundTimeRemaining=0;
+        const TIME_PANIC_ROUND=7,FORDITO_ROUND=9;
+        let grandPrizeQuestions=[],currentGPQuestionIndex=0,playerAnswers=[],grandPrizeTimer;
+
+        function getTodayString(){return new Date().toISOString().slice(0,10);}
+        function loadDailyScore(){const savedData=JSON.parse(localStorage.getItem('tippBajnokData'));if(savedData&&savedData.date===getTodayString()){dailyScore=savedData.score;}else{dailyScore=0;saveDailyScore();}score=dailyScore;updateScoreDisplay();}
+        function saveDailyScore(){const dataToSave={score:dailyScore,date:getTodayString()};localStorage.setItem('tippBajnokData',JSON.stringify(dataToSave));}
+        function normalizeText(text){return text.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[-_.,!?]/g,'');}
+        function isSimilar(guess,answer){const nG=normalizeText(guess),nA=normalizeText(answer),suf=['t','ra','re','ban','ben','bol','rol','hoz','hez','nak','nek','k','ok','ek','ök'];let sG=nG,sA=nA;for(const s of suf){if(sG.endsWith(s)){sG=sG.slice(0,-s.length);}if(sA.endsWith(s)){sA=sA.slice(0,-s.length);}}return nA.includes(nG)||nG.includes(nA)||sA.includes(sG)||sG.includes(sA);}
+        function updateScoreDisplay(){scoreEl.textContent=score;}
+        function mulberry32(a){return function(){var t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;}}
+        function shuffleArray(array,randomFunc){let c=array.length,r;while(c!=0){r=Math.floor(randomFunc()*c);c--;[array[c],array[r]]=[array[r],array[c]];}return array;}
+        
         function showNotification(message) {
-            clearTimeout(notificationTimeout);
             notificationBar.textContent = message;
             notificationBar.classList.add('show');
-            notificationTimeout = setTimeout(() => {
+            setTimeout(() => {
                 notificationBar.classList.remove('show');
-            }, 2500); // 2.5 másodpercig látható
+            }, 3000);
         }
 
-        // --- JÁTÉK INDÍTÓ FÜGGVÉNY ---
-        function startGame() {
-            startContainer.classList.add('hidden');
-            gameContainer.classList.remove('hidden');
-            // fastMoneyContainer elrejtése a start képernyőn
-            document.getElementById('fast-money-container').style.display = 'none';
-
-            score = 0;
-            updateScoreDisplay();
-            
-            const now = Date.now();
-            const seed = Math.floor(now / GAME_INTERVAL_MS);
-            const randomGenerator = mulberry32(seed);
-
-            const blockStartTime = new Date(seed * GAME_INTERVAL_MS);
-            const blockEndTime = new Date((seed + 1) * GAME_INTERVAL_MS);
-            const formatTime = (date) => date.toTimeString().substring(0, 5);
-            playedBlockTimeEl.textContent = `${formatTime(blockStartTime)} - ${formatTime(blockEndTime)}`;
-
-            let shuffledMainData = [...mainGameData];
-             if (shuffledMainData.length < 15 && shuffledMainData.length >= 10) { // Módosítva, hogy tesztelhető legyen 10 kérdéssel
-                window.fmQuestionsForRound = shuffledMainData.slice(5, 10); // Teszteléshez
-                currentQuestions = shuffledMainData.slice(0, 5); // Teszteléshez
-            } else if (shuffledMainData.length >= 15) {
-                shuffleArray(shuffledMainData, randomGenerator);
-                currentQuestions = shuffledMainData.slice(0, 10);
-                window.fmQuestionsForRound = shuffledMainData.slice(10, 15);
-            } else {
-                 alert("Hiba: Nincs elég kérdés a játék elindításához! Minimum 10 szükséges.");
-                 startContainer.classList.remove('hidden');
-                 gameContainer.classList.add('hidden');
-                 return;
-            }
-            
-            currentQuestionIndex = -1;
-            nextRound();
-        }
-
-        function nextRound() {
-            currentQuestionIndex++;
-            if (currentQuestionIndex >= currentQuestions.length) {
-                // startFastMoney(); // Villámkört ideiglenesen kikapcsolhatod teszteléshez
-                alert("Játék vége! Végső pontszám: " + score);
-                gameContainer.classList.add('hidden');
-                startContainer.classList.remove('hidden');
-                return;
-            }
-
-            // === ÚJ SZABÁLYOK INICIALIZÁLÁSA ===
-            currentStreak = 0;
-            isDoublePointsRound = [3, 7].includes(currentQuestionIndex); // 4. és 8. kör (0-alapú index)
-            
-            const questionData = currentQuestions[currentQuestionIndex];
-            currentAnswers = questionData.answers;
-            revealedAnswers = [];
-            currentStrikes = 0;
-            
-            // Kérdés kiírása a Dupla Pont jelzéssel
-            let roundTitle = `(${currentQuestionIndex + 1}/${currentQuestions.length})`;
-            let questionText = questionData.question;
-            if (isDoublePointsRound) {
-                questionEl.innerHTML = `${roundTitle} <span class="double-points-text">DUPLA PONT KÖR!</span> ${questionText}`;
-            } else {
-                questionEl.innerHTML = `${roundTitle} <br> ${questionText}`;
-            }
-
-            boardEl.innerHTML = '';
-            strikes.forEach(s => s.classList.remove('visible'));
-            guessInput.disabled = false;
-            guessButton.disabled = false;
-            const oldRevealBtn = document.getElementById('reveal-button');
-            if(oldRevealBtn) oldRevealBtn.remove();
-            let i = 1;
-            for (const answer in currentAnswers) {
-                const card = document.createElement('div');
-                card.classList.add('answer-card');
-                card.dataset.answer = normalizeText(answer);
-                card.innerHTML = `<div class="card-face card-front">${i}</div><div class="card-face card-back"><span class="answer-text">${answer.toUpperCase()}</span><span class="answer-points">${currentAnswers[answer]}</span></div>`;
-                boardEl.appendChild(card);
-                i++;
-            }
-        }
+        let infoBoxTimeout;
+        function updateInfoBox(message, type, duration = 2000) { clearTimeout(infoBoxTimeout); roundInfoBox.textContent = message; roundInfoBox.className = 'round-info-box'; if (type) roundInfoBox.classList.add(type); infoBoxTimeout = setTimeout(() => { if (roundTimeRemaining <= 0 && !isForditoRound && !isTimePanicRound) { roundInfoBox.textContent = 'Idő lejárt! Nincs több bónusz.'; roundInfoBox.className = 'round-info-box expired'; } else { roundInfoBox.textContent = ''; } }, duration); }
+        function selectGoldenAnswer(){const answers=Object.entries(currentAnswers).sort((a,b)=>a[1]-b[1]);const potentialGolden=answers.slice(0,Math.ceil(answers.length/2));goldenAnswer=potentialGolden[Math.floor(Math.random()*potentialGolden.length)][0];}
+        function startTimePanic(){timeRemaining=60;timerDisplay.classList.remove('hidden');strikesContainer.classList.add('hidden');updateTimerDisplay();timePanicTimer=setInterval(()=>{timeRemaining--;updateTimerDisplay();if(timeRemaining<=0){endRound(false);}},1000);}
+        function updateTimerDisplay(){timerDisplay.textContent=`0:${timeRemaining.toString().padStart(2,'0')}`}
+        function tickRoundTimer(){roundTimeRemaining--;updateRoundTimerDisplay();if(roundTimeRemaining<=0){clearInterval(roundTimer);roundTimerBox.classList.add('timer-expired');updateInfoBox('Idő lejárt! Nincs több bónusz.', 'expired', 50000);}}
+        function updateRoundTimerDisplay(){roundTimerEl.textContent=roundTimeRemaining;if(roundTimeRemaining>0){roundTimerBox.classList.remove('timer-expired');}}
+        function animatePoints(points,startElement){const startRect=startElement.getBoundingClientRect(),scoreRect=scoreEl.getBoundingClientRect();const pointFly=document.createElement('div');pointFly.textContent=`+${points}`;pointFly.className='point-fly-animation';pointFly.style.left=`${startRect.left+startRect.width/2}px`;pointFly.style.top=`${startRect.top+startRect.height/2}px`;document.body.appendChild(pointFly);setTimeout(()=>{pointFly.style.left=`${scoreRect.left+scoreRect.width/2}px`;pointFly.style.top=`${scoreRect.top+scoreRect.height/2}px`;pointFly.style.opacity='0';pointFly.style.transform='scale(0.5)';},20);setTimeout(()=>{dailyScore+=points;score=dailyScore;updateScoreDisplay();scoreEl.parentElement.classList.add('score-pulse');document.body.removeChild(pointFly);setTimeout(()=>scoreEl.parentElement.classList.remove('score-pulse'),400);saveDailyScore();},700);}
+        function animatePointLoss(points){dailyScore=Math.max(0,dailyScore-points);score=dailyScore;updateScoreDisplay();scoreEl.parentElement.style.color='var(--strike-red)';scoreEl.parentElement.classList.add('score-pulse');setTimeout(()=>{scoreEl.parentElement.style.color='var(--gold-text)';scoreEl.parentElement.classList.remove('score-pulse');},500);saveDailyScore();}
+        function startGame(){loadDailyScore();bodyEl.classList.remove('centering');startContainer.classList.add('hidden');mainWrapper.classList.remove('hidden');const now=Date.now(),seed=Math.floor(now/GAME_INTERVAL_MS),randomGenerator=mulberry32(seed);const blockStartTime=new Date(seed*GAME_INTERVAL_MS),blockEndTime=new Date((seed+1)*GAME_INTERVAL_MS);playedBlockTimeEl.textContent=`${blockStartTime.toTimeString().substring(0,5)} - ${blockEndTime.toTimeString().substring(0,5)}`;let shuffledMainData=[...mainGameData];shuffleArray(shuffledMainData,randomGenerator);currentQuestions=shuffledMainData.slice(0,10);currentQuestionIndex=-1;nextRound();}
+        function endGame(){showNotification("Következik a Fődíj Játék!");setTimeout(startGrandPrizeGame,2000);}
+        function nextRound(){currentQuestionIndex++;if(currentQuestionIndex>=currentQuestions.length){endGame();return;}
+        guessesListEl.innerHTML='';roundScore=0;goldenAnswer=null;isTimePanicRound=false;isForditoRound=false;isDoublePointsRound=[3,7].includes(currentQuestionIndex)&&currentQuestionIndex!==TIME_PANIC_ROUND&&currentQuestionIndex!==FORDITO_ROUND;
+        clearInterval(timePanicTimer);clearInterval(roundTimer);timerDisplay.classList.add('hidden');strikesContainer.classList.remove('hidden');roundTimerBox.classList.add('hidden'); roundInfoBox.textContent = ''; roundInfoBox.className = 'round-info-box';
+        const questionData=currentQuestions[currentQuestionIndex];currentAnswers=questionData.answers;revealedAnswers=[];currentStrikes=0;selectGoldenAnswer();
+        if(currentQuestionIndex===TIME_PANIC_ROUND){isTimePanicRound=true;continueRoundSetup();startTimePanic();}
+        else if(currentQuestionIndex===FORDITO_ROUND){isForditoRound=true;continueRoundSetup();}
+        else{continueRoundSetup();roundTimerBox.classList.remove('hidden');roundTimeRemaining=ROUND_DURATION;updateRoundTimerDisplay();roundTimer=setInterval(tickRoundTimer,1000);}}
+        function continueRoundSetup(){let roundTitle=`(${currentQuestionIndex+1}/${currentQuestions.length})`,specialTitle="";if(isDoublePointsRound)specialTitle=`<span class="double-points-text">DUPLA PONT KÖR!</span>`;if(isTimePanicRound)specialTitle=`<span class="double-points-text">IDŐPÁNIK KÖR!</span>`;if(isForditoRound){specialTitle=`<span class="fordito-text">FORDÍTÓ KÖR!</span>`;strikesContainer.classList.add('hidden');showNotification("Egyetlen tipped van! A nyeremény 10x pont, a hiba -50 pont!");}
+        questionEl.innerHTML=`${roundTitle} ${specialTitle} ${currentQuestions[currentQuestionIndex].question}`;boardEl.innerHTML='';strikes.forEach(s=>s.classList.remove('visible'));guessInput.value='';guessInput.disabled=false;guessButton.disabled=false;nextRoundButton.textContent=(currentQuestionIndex===FORDITO_ROUND-1)?"IRÁNY A FORDÍTÓ!":"Következő Kérdés";if(currentQuestionIndex>=currentQuestions.length-1){nextRoundButton.textContent="FŐDÍJ JÁTÉK";}
+        nextRoundButton.classList.add('hidden');const oldRevealBtn=document.getElementById('reveal-button');if(oldRevealBtn)oldRevealBtn.remove();
+        let i=1;for(const answer in currentAnswers){const card=document.createElement('div');card.classList.add('answer-card');card.dataset.answerKey=answer;card.innerHTML=`<div class="card-face card-front">${i}</div><div class="card-face card-back"><span class="answer-text">${answer.toUpperCase()}</span><span class="answer-points">${currentAnswers[answer]}</span></div>`;boardEl.appendChild(card);i++;}}
+        function addGuessToList(guess,isCorrect){const li=document.createElement('li');li.textContent=guess;li.classList.add(isCorrect?'correct-guess':'wrong-guess');guessesListEl.prepend(li);}
+        function handleGuess(){if(isForditoRound){handleForditoGuess();return;}const userGuess=guessInput.value;if(!userGuess.trim()||guessInput.disabled)return;let matchFound=null,normalizedGuess=normalizeText(userGuess);for(const key in currentAnswers){if(isSimilar(userGuess,key)&&!revealedAnswers.includes(key)){matchFound=key;break;}}if(!matchFound){if(synonymMap[normalizedGuess]){for(const synonym of synonymMap[normalizedGuess]){for(const answerKey in currentAnswers){if(isSimilar(synonym,answerKey)&&!revealedAnswers.includes(answerKey)){matchFound=answerKey;break;}}if(matchFound)break;}}if(!matchFound){for(const answerKey in currentAnswers){const normalizedAnswer=normalizeText(answerKey);if(synonymMap[normalizedAnswer]&&synonymMap[normalizedAnswer].includes(normalizedGuess)&&!revealedAnswers.includes(answerKey)){matchFound=answerKey;break;}}}}
+        addGuessToList(userGuess,!!matchFound);if(matchFound){if(roundTimeRemaining>0){const timeBonusPoints=roundTimeRemaining;animatePoints(timeBonusPoints,document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`));roundTimeRemaining+=3;updateRoundTimerDisplay();updateInfoBox(`+${timeBonusPoints} pont! +3mp!`, 'bonus-active');}if(isTimePanicRound)timeRemaining+=5;revealedAnswers.push(matchFound);let pointsAwarded=currentAnswers[matchFound];if(isDoublePointsRound)pointsAwarded*=2;animatePoints(pointsAwarded,document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`));currentStreak++;let isGolden=matchFound===goldenAnswer;if(isGolden){let bonus=100;setTimeout(()=>animatePoints(bonus,document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`)),100);showNotification(`✨ ARANY VÁLASZ! +${bonus} PONT!`);}if(currentStreak>=3&&currentStreak%3===0){let streakBonus=30;if(isDoublePointsRound)streakBonus=60;setTimeout(()=>animatePoints(streakBonus,document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`)),200);showNotification(`SOROZAT BÓNUSZ! +${streakBonus} PONT`);}
+        const card=document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`);if(card){if(isGolden){const cardFront=card.querySelector('.card-front'),originalContent=cardFront.innerHTML,bonus=100;cardFront.innerHTML=`<div class="flash-content">ARANY VÁLASZ<br>+${bonus} PONT</div>`;cardFront.classList.add('golden-flash');setTimeout(()=>{cardFront.classList.remove('golden-flash');cardFront.innerHTML=originalContent;card.classList.add('revealed');card.querySelector('.card-back').classList.add('golden-answer');},1500);}else{card.classList.add('revealed');}}
+        if(revealedAnswers.length===Object.keys(currentAnswers).length){let boardBonus=50;if(isDoublePointsRound)boardBonus=100;setTimeout(()=>animatePoints(boardBonus,document.querySelector(`#score-box`)),300);showNotification(`TÁBLA BÓNUSZ! +${boardBonus} PONT`);setTimeout(()=>endRound(true),isGolden?1600:100);}}else{currentStreak=0;if(isTimePanicRound){timeRemaining=Math.max(0,timeRemaining-10);}else{addStrike();}}if(isTimePanicRound)updateTimerDisplay();guessInput.value='';guessInput.focus();}
+        function handleForditoGuess(){const userGuess=guessInput.value;guessInput.disabled=true;guessButton.disabled=true;if(!userGuess.trim())return;let matchFound=null;for(const key in currentAnswers){if(isSimilar(userGuess,key)){matchFound=key;break;}}addGuessToList(userGuess,!!matchFound);if(matchFound){const points=currentAnswers[matchFound]*10;showNotification(`FORDÍTÓ SIKER! +${points} PONT!`);animatePoints(points,document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`));const card=document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`);if(card)card.classList.add('revealed');}else{const penalty=50;showNotification(`SIKERTELEN FORDÍTÁS! -${penalty} PONT!`);animatePointLoss(penalty);}endRound(false);}
+        function addStrike(){if(isTimePanicRound||isForditoRound)return;if(currentStrikes<3){strikes[currentStrikes].classList.add('visible');currentStrikes++;if(currentStrikes===3){strikesContainer.classList.add('shake');setTimeout(()=>{strikesContainer.classList.remove('shake');},600);endRound(false);}}}
+        function endRound(isBoardCleared){clearInterval(timePanicTimer);clearInterval(roundTimer);guessInput.disabled=true;guessButton.disabled=true;nextRoundButton.classList.remove('hidden');if(!isBoardCleared&&!isForditoRound){const revealButton=document.createElement('button');revealButton.id='reveal-button';revealButton.textContent='Válaszok Felfedése';revealButton.classList.add('game-button');revealButton.onclick=revealAllAnswers;buttonContainer.insertBefore(revealButton,nextRoundButton);}else if(isForditoRound){setTimeout(revealAllAnswers,1500);}if(currentQuestionIndex>=currentQuestions.length-1){nextRoundButton.textContent="FŐDÍJ JÁTÉK";}}
+        function revealAllAnswers(){document.querySelectorAll('.answer-card').forEach(card=>{const key=card.dataset.answerKey;if(!card.classList.contains('revealed')){if(key===goldenAnswer)card.querySelector('.card-back').classList.add('golden-answer');card.classList.add('revealed','missed-answer');}});const revealBtn=document.getElementById('reveal-button');if(revealBtn)revealBtn.remove();}
+        function startGrandPrizeGame(){bodyEl.classList.add('centering');mainWrapper.classList.add('hidden');startContainer.classList.add('hidden');grandPrizeContainer.classList.remove('hidden');playerAnswers=[];currentGPQuestionIndex=0;grandPrizeQuestions=[...grandPrizeQuizData];shuffleArray(grandPrizeQuestions,Math.random);displayGPQuestion();let timeRemaining=400;gpTimerEl.textContent="40.0";grandPrizeTimer=setInterval(()=>{timeRemaining--;const seconds=Math.floor(timeRemaining/10);const tenths=timeRemaining%10;gpTimerEl.textContent=`${seconds}.${tenths}`;if(timeRemaining<=0){showEvaluation();}},100);}
+        function displayGPQuestion(){const questionData=grandPrizeQuestions[currentGPQuestionIndex];gpQuestionTextEl.textContent=questionData.question;gpOptionsAreaEl.innerHTML='';questionData.options.forEach((option,index)=>{const button=document.createElement('button');button.textContent=option;button.className='gp-option-btn';button.onclick=()=>selectGPAnswer(index);gpOptionsAreaEl.appendChild(button);});gpProgressFillEl.style.width=`${(currentGPQuestionIndex/grandPrizeQuestions.length)*100}%`;}
+        function selectGPAnswer(selectedIndex){playerAnswers[currentGPQuestionIndex]=selectedIndex;document.querySelectorAll('.gp-option-btn').forEach((btn,index)=>{if(index===selectedIndex)btn.classList.add('selected');btn.disabled=true;});setTimeout(()=>{currentGPQuestionIndex++;if(currentGPQuestionIndex<grandPrizeQuestions.length){displayGPQuestion();}else{showEvaluation();}},300);}
+        function showEvaluation(){clearInterval(grandPrizeTimer);grandPrizeContainer.classList.add('hidden');evaluationContainer.classList.remove('hidden');let correctCount=0;evalListEl.innerHTML='';for(let i=0;i<grandPrizeQuestions.length;i++){const questionData=grandPrizeQuestions[i];const playerAnswerIndex=playerAnswers[i];const correctAnswerIndex=questionData.correctAnswer;const isCorrect=playerAnswerIndex===correctAnswerIndex;if(isCorrect)correctCount++;const li=document.createElement('li');li.className='eval-item';li.innerHTML=`<div class="eval-question">${i+1}. ${questionData.question}</div><div class="eval-answer ${isCorrect?'correct':'incorrect'}">Tipped: ${playerAnswerIndex!==undefined?questionData.options[playerAnswerIndex]:'Nem válaszolt'}</div>${!isCorrect?`<div class="eval-answer correct">Helyes válasz: ${questionData.options[correctAnswerIndex]}</div>`:''}`;evalListEl.appendChild(li);}let summaryText="";if(correctCount===10){summaryText=`TÖKÉLETES! 10/10! A pontjaid megduplázódnak!`;dailyScore*=2;}else if(correctCount>=8){summaryText=`KIVÁLÓ! ${correctCount}/10! +200 bónuszpont!`;dailyScore+=200;}else if(correctCount>=6){summaryText=`SZÉP MUNKA! ${correctCount}/10! +100 bónuszpont!`;dailyScore+=100;}else{summaryText=`SAJNOS NEM SIKERÜLT! ${correctCount}/10! A napi pontjaid lenullázódnak.`;dailyScore=0;}evalSummaryEl.textContent=summaryText;score=dailyScore;updateScoreDisplay();saveDailyScore();}
         
-        function handleGuess() {
-            const userGuess = normalizeText(guessInput.value);
-            if (!userGuess || guessInput.disabled) return;
-            
-            let matchFound = null;
-            for (const key in currentAnswers) {
-                if (normalizeText(key) === userGuess && !revealedAnswers.includes(userGuess)) {
-                    matchFound = key;
-                    break;
-                }
-            }
-            
-            if (matchFound) {
-                const normalizedMatch = normalizeText(matchFound);
-                revealedAnswers.push(normalizedMatch);
-                
-                // === PONTOZÁS AZ ÚJ SZABÁLYOKKAL ===
-                let pointsAwarded = currentAnswers[matchFound];
-                if (isDoublePointsRound) { pointsAwarded *= 2; }
-                score += pointsAwarded;
-                currentStreak++;
-
-                if (currentStreak >= 3 && currentStreak % 3 === 0) {
-                    let streakBonus = isDoublePointsRound ? 60 : 30;
-                    score += streakBonus;
-                    showNotification(`SOROZAT BÓNUSZ! +${streakBonus} PONT`);
-                }
-
-                updateScoreDisplay();
-                const card = document.querySelector(`.answer-card[data-answer="${normalizedMatch}"]`);
-                card.classList.add('revealed');
-
-                if (revealedAnswers.length === Object.keys(currentAnswers).length) {
-                    let boardBonus = isDoublePointsRound ? 100 : 50;
-                    score += boardBonus;
-                    updateScoreDisplay();
-                    showNotification(`TÁBLA BÓNUSZ! +${boardBonus} PONT`);
-                    endRound();
-                }
-            } else {
-                addStrike();
-            }
-            
-            guessInput.value = '';
-            guessInput.focus();
-        }
-        
-        function addStrike() {
-            currentStreak = 0; // Sorozat megszakad
-            if (currentStrikes < 3) {
-                strikes[currentStrikes].classList.add('visible');
-                currentStrikes++;
-                if (currentStrikes === 3) endRound();
-            }
-        }
-        function endRound() {
-            guessInput.disabled = true;
-            guessButton.disabled = true;
-            if (revealedAnswers.length < Object.keys(currentAnswers).length) {
-                const revealButton = document.createElement('button');
-                revealButton.id = 'reveal-button';
-                revealButton.textContent = 'Válaszok Felfedése';
-                revealButton.classList.add('game-button');
-                revealButton.onclick = revealAllAnswers;
-                buttonContainer.appendChild(revealButton);
-            }
-        }
-        function revealAllAnswers() {
-            document.querySelectorAll('.answer-card').forEach(card => {
-                if (!card.classList.contains('revealed')) card.classList.add('revealed', 'missed-answer');
-            });
-            this.remove();
-        }
-        
-        // --- ESEMÉNYKEZELŐK ---
-        document.getElementById('start-challenge-button').addEventListener('click', startGame);
-        guessButton.addEventListener('click', handleGuess);
-        nextRoundButton.addEventListener('click', nextRound);
-        guessInput.addEventListener('keyup', (event) => { if (event.key === "Enter") handleGuess(); });
+        document.getElementById('start-challenge-button').addEventListener('click',startGame);
+        guessButton.addEventListener('click',handleGuess);
+        nextRoundButton.addEventListener('click',nextRound);
+        guessInput.addEventListener('keyup',(event)=>{if(event.key==="Enter")handleGuess();});
+        backToStartBtn.onclick = () => { evaluationContainer.classList.add('hidden'); startContainer.classList.remove('hidden'); mainWrapper.classList.add('hidden'); bodyEl.classList.add('centering'); loadDailyScore(); };
+        window.onload = loadDailyScore;
     </script>
 </body>
-</html>```
+</html>
