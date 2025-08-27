@@ -176,6 +176,18 @@
         @media (max-width: 960px) { body:not(.centering) { align-items: flex-start; } #main-wrapper { flex-direction: column; } #game-container, #guesses-container { width: 100%; } #guesses-container { margin-top: 20px; position: static; } }
         @media (max-width: 768px) { #start-container .start-title { font-size: 2.8em; } #start-container p { font-size: 1.1em; max-width: 95%; } #start-challenge-button { width: 90%; font-size: 1.3em; } .logo-container { max-width: 120px; } #header { grid-template-columns: 1fr; gap: 15px; text-align: center; } #challenge-info-box, #score-box { text-align: center; } }
         @media (max-width: 650px) { body { padding: 10px 5px; } .container { padding: 15px; } #played-block-time { font-size: 1.2em; } #score, #daily-score-label { font-size: 2.5em; } #daily-score-label { font-size: 1.2em; } #question { font-size: 1.1em; } #game-info-bar { flex-direction: column; gap: 20px; } .strike-x { width: 50px; height: 50px; font-size: 2.2em; } .card-back { font-size: 1.1em; padding: 0 10px; } .answer-text { flex: 1; min-width: 0; overflow-wrap: break-word; word-break: break-word; padding-right: 8px; } #notification-bar { font-size: 1.1em; padding: 8px 15px; width: 90%; top: 90px; } #notification-bar.show { top: 75px; } #don-modal { width: 90%; } #gp-timer { font-size: 4em; } #gp-question-text { font-size: 1.3em; min-height: 80px; } #gp-options-area { grid-template-columns: 1fr; } .gp-option-btn { padding: 15px; font-size: 1.1em; } }
+        
+        /* ÚJ ANIMÁCIÓ A TÚL RÖVID TIPPRE */
+        @keyframes shake-input {
+          10%, 90% { transform: translateX(-5px); }
+          20%, 80% { transform: translateX(5px); }
+          30%, 50%, 70% { transform: translateX(-3px); }
+          40%, 60% { transform: translateX(3px); }
+        }
+        #guess-input.shake {
+            animation: shake-input 0.4s;
+        }
+
     </style>
 </head>
 <body class="centering">
@@ -250,12 +262,13 @@
                     <li><strong>Fordító Kör (10. kör):</strong> Az utolsó, mindent eldöntő kör! <strong>Egyetlen tipped van.</strong> Ha helyes, a válasz pontszámát <strong>megszorozzuk tízzel</strong>. Ha helytelen, <strong>levonunk 50 pontot</strong>.</li>
                 </ul>
                 <h3>A Fődíj Játék</h3>
-                <p>A 10. kör után következik a nagy finálé. Egy <strong>50 másodperces</strong>, pörgős kvízjáték 10 kérdéssel. A teljesítményed alapján a napi pontjaid sorsa a következőképpen alakul:</p>
+                <p>A 10. kör után következik a nagy finálé. Egy <strong>50 másodperces</strong>, pörgős villámjáték 10 kérdéssel. A helytelen válaszok újra előkerülnek, amíg le nem jár az idő. A teljesítményed alapján a napi pontjaid sorsa a következőképpen alakul:</p>
                 <ul>
-                    <li><strong>10 helyes válasz:</strong> A napi pontszámod <strong>MEGDUPLÁZÓDIK!</strong></li>
-                    <li><strong>8-9 helyes válasz:</strong> Kapsz <strong>+200 bónuszpontot</strong>.</li>
-                    <li><strong>6-7 helyes válasz:</strong> Kapsz <strong>+100 bónuszpontot</strong>.</li>
-                    <li><strong>5 vagy kevesebb helyes válasz:</strong> Sajnos a napi pontszámod <strong>lenullázódik</strong>.</li>
+                    <li><strong>10 helyes válasz:</strong> A napi pontszámod <strong>MEGDUPLÁZÓDIK</strong> és kapsz <strong>+500 bónuszpontot!</strong></li>
+                    <li><strong>9 helyes válasz:</strong> A pontszámod <strong>másfélszeresére nő</strong> és kapsz <strong>+200 bónuszpontot</strong>.</li>
+                    <li><strong>7-8 helyes válasz:</strong> Kapsz <strong>+500 bónuszpontot</strong>.</li>
+                    <li><strong>5-6 helyes válasz:</strong> Kapsz <strong>+250 bónuszpontot</strong>.</li>
+                    <li><strong>4 vagy kevesebb helyes válasz:</strong> Sajnos a napi pontszámod <strong>lenullázódik</strong>.</li>
                 </ul>
                 <p>Sok sikert, Bajnok!</p>
             </div>
@@ -264,8 +277,440 @@
     
     <script>
         // --- JAVÍTÁS: TESZT KÉRDÉSEK HOZZÁADVA ---
-        const grandPrizeQuizData = [ 
-         { question: "Melyik állat a dzsungel királya?", options: ["Tigris", "Oroszlán", "Medve", "Elefánt"], correctAnswer: 1 },
+        const mainGameData = [
+            { question: "Nevezz meg egy dolgot, amit az emberek gyakran elveszítenek!", answers: { "kulcs": 35, "telefon": 30, "pénztárca": 20, "szemüveg": 10, "türelem": 5, "fülbevaló": 4 } },
+            { question: "Mondj egy tipikus magyar ételt!", answers: { "gulyásleves": 40, "töltött káposzta": 28, "pörkölt": 15, "lángos": 12, "halászlé": 8, "dobostorta": 3 } },
+            { question: "Nevezz meg egy állatot, ami egy farmon él!", answers: { "tehén": 30, "disznó": 25, "csirke": 22, "ló": 15, "juh": 10, "kacsa": 6 } },
+            { question: "Mondj egy dolgot, amit a strandra viszel magaddal!", answers: { "törölköző": 38, "naptej": 27, "fürdőruha": 18, "papucs": 11, "könyv": 7, "labda": 5 } },
+            { question: "Nevezz meg egy híres magyar történelmi személyt!", answers: { "Kossuth Lajos": 29, "Szent István": 26, "Mátyás király": 23, "Petőfi Sándor": 16, "Rákóczi Ferenc": 9, "Széchenyi István": 4 } },
+            { question: "Mondj egy színt a magyar zászlóból!", answers: { "piros": 50, "fehér": 40, "zöld": 35 } },
+            { question: "Nevezz meg egy tárgyat egy iskolai tanteremben!", answers: { "tábla": 33, "pad": 30, "szék": 24, "kréta": 12, "tankönyv": 9, "füzet": 5 } },
+            { question: "Mondj egy közlekedési eszközt!", answers: { "autó": 45, "busz": 25, "vonat": 15, "bicikli": 10, "repülő": 8, "villamos": 6 } },
+            { question: "Nevezz meg egy gyümölcsöt, ami piros!", answers: { "alma": 40, "eper": 35, "cseresznye": 20, "málna": 13, "ribizli": 7, "görögdinnye": 4 } },
+            { question: "Mondj valamit, ami hideg!", answers: { "jég": 38, "hó": 26, "fagylalt": 19, "víz": 11, "tél": 8, "fém": 3 } },
+            { question: "Nevezz meg egy dolgot, ami egy kanapé alatt lehet!", answers: { "por": 45, "pénz": 25, "játék": 15, "távirányító": 10, "morzsa": 5 } },
+    { question: "Mondj egy okot, amiért felhívsz valakit telefonon!", answers: { "megkérdezni hogy van": 40, "segítséget kérni": 25, "találkozót megbeszélni": 15, "szülinapot kívánni": 12, "pletykálni": 8 } },
+    { question: "Nevezz meg egy sajtfajtát!", answers: { "trappista": 50, "ementáli": 20, "cheddar": 15, "parmezán": 10, "camembert": 5 } },
+    { question: "Mondj egy dolgot, amit egy hot dogra teszel!", answers: { "mustár": 45, "ketchup": 30, "majonéz": 10, "pirított hagyma": 8, "uborka": 7 } },
+    { question: "Nevezz meg egy állatot, amelyik téli álmot alszik!", answers: { "medve": 60, "sün": 20, "borz": 10, "mormota": 7, "denevér": 3 } },
+    { question: "Mondj egy dolgot, amit egy pizsamapartin csinálnak!", answers: { "párnacsatáznak": 35, "filmet néznek": 30, "pletykálnak": 15, "esznek": 12, "sokáig fennmaradnak": 8 } },
+    { question: "Nevezz meg egy híres feltalálót!", answers: { "edison": 40, "einstein": 25, "bell": 15, "tesla": 12, "wright fivérek": 8 } },
+    { question: "Mondj egy dolgot, ami elolvad a napon!", answers: { "hó": 45, "jég": 30, "fagyi": 10, "csoki": 8, "vaj": 7 } },
+    { question: "Nevezz meg egy okot, amiért bocsánatot kérsz!", answers: { "megbántottam valakit": 40, "késtem": 25, "hibáztam": 15, "összetörtem valamit": 12, "hazudtam": 8 } },
+    { question: "Nevezz meg egy tésztaételt!", answers: { "bolognai": 40, "carbonara": 25, "milánói": 15, "túrós csusza": 12, "lasagne": 8 } },
+    { question: "Mondj egy dolgot, amit egy felvonuláson látsz!", answers: { "tömeg": 35, "zászló": 25, "zenekar": 20, "jelmezesek": 15, "transzparens": 5 } },
+    { question: "Nevezz meg egy okot, amiért suttogni kell!", answers: { "valaki alszik": 40, "titkot mondok": 30, "könyvtárban vagyok": 15, "templomban vagyok": 10, "bújócskázok": 5 } },
+    { question: "Nevezz meg egy helyet, ahol hosszú sort kell kiállni!", answers: { "posta": 35, "bolt pénztár": 30, "bank": 15, "orvosi rendelő": 12, "vidámpark": 8 } },
+    { question: "Nevezz meg egy cipőfajtát!", answers: { "sportcipő": 40, "csizma": 25, "papucs": 15, "magassarkú": 12, "szandál": 8 } },
+    { question: "Mondj egy híres épületet a világból!", answers: { "eiffel torony": 45, "pisai ferde torony": 20, "szabadság szobor": 15, "colosseum": 12, "gizai piramisok": 8 } },
+    { question: "Nevezz meg egy dolgot, amit egy mocsárban találsz!", answers: { "sár": 35, "nád": 25, "béka": 20, "szúnyog": 15, "vízililiom": 5 } },
+    { question: "Mondj egy okot, amiért vízvezetékszerelőt hívsz!", answers: { "csőtörés": 45, "dugulás": 25, "csöpög a csap": 15, "fűtést szerel": 10, "radiátor csere": 5 } },
+    { question: "Nevezz meg egy süteményfajtát!", answers: { "muffin": 30, "keksz": 25, "linzer": 20, "brownie": 15, "piskóta": 10 } },
+    { question: "Mondj egy szót, amit egy kalóz mond!", answers: { "arr": 50, "kincsem": 20, "a fene egye meg": 15, "kapitány": 10, "deszkára": 5 } },
+    { question: "Nevezz meg egy sapkafajtát!", answers: { "kötött sapka": 30, "baseball sapka": 25, "kalap": 20, "svájci sapka": 15, "szalmakalap": 10 } },
+    { question: "Mondj egy dolgot, ami egy DNS-ben van!", answers: { "információ": 40, "gén": 30, "örökítőanyag": 15, "kromoszóma": 10, "spirál": 5 } },
+    { question: "Mondj egy dolgot, ami egy eszpresszó kávéban van!", answers: { "kávé": 50, "víz": 30, "koffein": 10, "cukor": 7, "hab": 3 } },
+    { question: "Nevezz meg egy dolgot, ami egy szerszámos fészerben van!", answers: { "fűnyíró": 35, "ásó": 25, "gereblye": 20, "locsoló": 15, "talicska": 5 } },
+    { question: "Mondj egy dolgot, ami egy kastélykertben van!", answers: { "szökőkút": 35, "labirintus": 25, "pad": 20, "szobor": 15, "sövény": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy szélmalommal kapcsolatos!", answers: { "szél": 40, "lapát": 30, "liszt": 15, "hollandia": 10, "don quijote": 5 } },
+    { question: "Mondj egy dolgot, amit az utolsó pillanatra hagysz!", answers: { "tanulás": 40, "ajándékvásárlás": 25, "csomagolás": 15, "takarítás": 12, "adobevallás": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy sci-fi filmben van!", answers: { "űrhajó": 45, "lézerfegyver": 20, "robot": 15, "idegen": 12, "időutazás": 8 } },
+    { question: "Mondj egy dolgot, ami egy levelibéka bőrével kapcsolatos!", answers: { "zöld": 40, "sima": 25, "ragadós": 15, "nyálkás": 12, "nedves": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy bűvésztrükkhöz kell!", answers: { "kártya": 35, "kalap": 25, "kendő": 20, "galamb": 15, "asszisztens": 5 } },
+    { question: "Mondj egy dolgot, ami egy elhagyatott szigeten van!", answers: { "pálmafa": 40, "homok": 25, "kókuszdió": 15, "hajóroncs": 12, "magány": 8 } },
+    { question: "Nevezz meg egy dolgot, amit egy mikuláscsomagban találsz!", answers: { "csoki mikulás": 40, "szaloncukor": 25, "narancs": 15, "mogyoró": 12, "virgács": 8 } },
+    { question: "Mondj egy dolgot, amit egy léggömbbel csinálsz!", answers: { "felfújom": 45, "eldurrantom": 20, "elengedem": 15, "játszok vele": 12, "feldíszítem": 8 } },
+    { question: "Nevezz meg egy dolgot, amit a fogtündér hoz!", answers: { "pénz": 60, "ajándék": 15, "levél": 10, "fog": 8, "boldogság": 7 } },
+    { question: "Mondj egy dolgot, amit egy takaró alatt csinálsz!", answers: { "alszom": 45, "olvasok": 20, "filmet nézek": 15, "bújok": 12, "rettegek": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy hangszerboltban szól!", answers: { "gitár": 35, "zongora": 25, "dob": 20, "zene": 15, "próbálgatás": 5 } },
+    { question: "Mondj egy dolgot, amit egy pizzafutár hoz!", answers: { "pizza": 60, "üdítő": 15, "számla": 10, "saláta": 8, "desszert": 7 } },
+    { question: "Nevezz meg egy dolgot, ami egy tollaslabda meccsen van!", answers: { "ütő": 40, "labda": 30, "háló": 15, "játékos": 10, "pont": 5 } },
+    { question: "Mondj egy dolgot, amit egy trófeán látsz!", answers: { "gravírozás": 40, "serleg": 25, "figura": 15, "dátum": 12, "név": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy western filmben van!", answers: { "cowboy": 45, "pisztolypárbaj": 20, "ló": 15, "indián": 12, "kocsma": 8 } },
+    { question: "Mondj egy dolgot, amit egy zöldséglébe teszel!", answers: { "répa": 40, "cékla": 25, "alma": 15, "zeller": 12, "spenót": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy trópusi szigeten él!", answers: { "majom": 35, "papagáj": 30, "kígyó": 15, "pók": 12, "lepke": 8 } },
+    { question: "Mondj egy dolgot, ami egy vetélkedőben van!", answers: { "kérdés": 40, "műsorvezető": 25, "nyeremény": 15, "játékos": 12, "válasz": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy úszómedencében van!", answers: { "víz": 55, "klór": 20, "létra": 10, "csempe": 8, "úszó ember": 7 } },
+    { question: "Mondj egy dolgot, amit egy szuperhős visel!", answers: { "köpeny": 45, "álarc": 25, "jelmez": 15, "csizma": 10, "embléma": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy sírkövön áll!", answers: { "név": 45, "dátum": 30, "idézet": 10, "kereszt": 8, "virág": 7 } },
+    { question: "Mondj egy dolgot, amit egy szerelő javít!", answers: { "autó": 50, "mosógép": 20, "csap": 15, "tv": 10, "fűtés": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy romantikus vacsorán van!", answers: { "gyertya": 45, "bor": 25, "virág": 15, "zene": 10, "finom étel": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy rendőrautóban van!", answers: { "rendőr": 40, "rádió": 25, "bilincs": 15, "sziréna": 12, "fegyver": 8 } },
+    { question: "Mondj egy dolgot, ami egy rock koncerten van!", answers: { "gitár": 35, "dob": 25, "énekes": 20, "tömeg": 15, "hangos zene": 5 } },
+    { question: "Mondj egy dolgot, ami egy puzzle dobozán van!", answers: { "kép": 50, "darabszám": 25, "márkanév": 10, "korhatár": 8, "vonalkód": 7 } },
+    { question: "Nevezz meg egy dolgot, ami egy pikniken van!", answers: { "pokróc": 40, "szendvics": 30, "kosár": 15, "hangya": 10, "üdítő": 5 } },
+    { question: "Mondj egy dolgot, amit egy órás javít!", answers: { "óra": 60, "elem": 15, "szíj": 10, "mutató": 8, "szerkezet": 7 } },
+    { question: "Nevezz meg egy dolgot, ami egy orvosi rendelő várójában van!", answers: { "beteg": 40, "szék": 25, "újság": 15, "recepciós": 12, "csend": 8 } },
+    { question: "Mondj egy dolgot, ami egy óceán mélyén van!", answers: { "hal": 35, "hajóroncs": 25, "kincs": 20, "tengeralattjáró": 15, "sötétség": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy noteszben van!", answers: { "jegyzet": 40, "telefonszám": 25, "dátum": 15, "lista": 12, "rajz": 8 } },
+    { question: "Mondj egy dolgot, ami egy mezőn van!", answers: { "fű": 45, "virág": 25, "tücsök": 10, "szöcske": 8, "traktor": 7 } },
+    { question: "Nevezz meg egy dolgot, ami egy mézeskalács házikón van!", answers: { "cukorka": 40, "mézeskalács": 25, "cukormáz": 15, "ablak": 12, "ajtó": 8 } },
+    { question: "Mondj egy dolgot, amit egy marslakó mondana!", answers: { "békével jöttünk": 35, "vigyetek a vezéretekhez": 25, "furcsa hangok": 20, "hello": 15, "nem értem": 5 } },
+    { question: "Mondj egy dolgot, ami egy luxusautóban van!", answers: { "bőrülés": 40, "gps": 20, "automata váltó": 15, "ülésfűtés": 13, "minibár": 12 } },
+    { question: "Mondj egy dolgot, ami egy logikai játékban van!", answers: { "feladvány": 40, "szabály": 25, "megoldás": 15, "gondolkodás": 12, "fejtörő": 8 } },
+    { question: "Mondj egy dolgot, ami egy kutyaálomban lehet!", answers: { "csont": 40, "kergetőzés": 25, "gazdi": 15, "macska": 12, "futás": 8 } },
+    { question: "Mondj egy dolgot, ami egy kozmetikusnál van!", answers: { "krém": 35, "maszk": 25, "kezelőágy": 20, "tükör": 15, "gőzölő": 5 } },
+    { question: "Nevezz meg egy dolgot, amit egy képregényben látsz!", answers: { "szuperhős": 40, "szövegbuborék": 30, "rajz": 15, "gonosztevő": 10, "hangutánzó szó": 5 } },
+    { question: "Mondj egy dolgot, ami egy kávéscsészében van!", answers: { "kávé": 60, "kanál": 15, "cukor": 10, "tej": 8, "zacc": 7 } },
+    { question: "Mondj egy dolgot, ami egy jégkorcsolyán van!", answers: { "penge": 50, "cipőfűző": 25, "cipő": 15, "nyelv": 7, "élvédő": 3 } },
+    { question: "Mondj egy dolgot, amit egy kamasz csinál!", answers: { "telefonozik": 40, "zenét hallgat": 25, "barátokkal lóg": 15, "visszabeszél": 12, "sokat alszik": 8 } },
+    { question: "Mondj egy dolgot, ami egy írógépen van!", answers: { "billentyű": 50, "papír": 20, "festékszalag": 15, "kar": 10, "csengő": 5 } },
+    { question: "Mondj egy dolgot, ami egy hőlégballonban van!", answers: { "kosár": 40, "láng": 25, "utas": 15, "pilóta": 12, "ballon": 8 } },
+    { question: "Nevezz meg egy dolgot, amit egy hamburgeresnél kapsz!", answers: { "hamburger": 45, "sült krumpli": 25, "kóla": 15, "szalvéta": 10, "tálca": 5 } },
+    { question: "Mondj egy dolgot, ami egy hajón történik!", answers: { "ringatózás": 35, "utazás": 25, "horgászat": 20, "napozás": 15, "hányinger": 5 } },
+    { question: "Mondj egy dolgot, ami egy fülben van!", answers: { "fülbevaló": 40, "fülzsír": 25, "hallókészülék": 15, "fülhallgató": 12, "vatta": 8 } },
+    { question: "Mondj egy dolgot, ami egy esküvői fogadáson van!", answers: { "torta": 40, "tánc": 25, "vacsora": 15, "zene": 12, "pezsgő": 8 } },
+    { question: "Nevezz meg egy dolgot, amit egy filmforgatáson látsz!", answers: { "kamera": 45, "rendező": 25, "színész": 15, "csapó": 10, "fények": 5 } },
+    { question: "Mondj egy dolgot, ami egy festményen van!", answers: { "táj": 35, "ember": 30, "szín": 15, "keret": 12, "ecsetvonás": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy ékszerbolti kirakatban van!", answers: { "gyűrű": 45, "nyaklánc": 25, "óra": 15, "karkötő": 10, "fülbevaló": 5 } },
+    { question: "Mondj egy dolgot, ami egy csokoládégyárban van!", answers: { "csoki": 50, "kakaó": 20, "cukor": 15, "gép": 10, "finom illat": 5 } },
+    { question: "Mondj egy dolgot, ami egy ceruza végén van!", answers: { "radír": 60, "hegy": 25, "grafit": 10, "fa": 3, "rágásnyom": 2 } },
+    { question: "Mondj egy dolgot, ami egy borospincében van!", answers: { "boroshordó": 45, "borosüveg": 25, "pókháló": 10, "hideg": 8, "doh": 7 } },
+    { question: "Mondj egy dolgot, ami egy buborékban van!", answers: { "levegő": 60, "víz": 15, "szappan": 10, "fény": 8, "tükörkép": 7 } },
+    { question: "Mondj egy dolgot, ami egy bohócruhán van!", answers: { "nagy gomb": 35, "pöttyös minta": 25, "csíkos minta": 20, "fodros gallér": 15, "folt": 5 } },
+    { question: "Mondj egy dolgot, ami egy barkácsboltban van!", answers: { "csavar": 40, "festék": 25, "fúrógép": 15, "szög": 12, "kalapács": 8 } },
+    { question: "Mondj egy dolgot, ami egy autópálya pihenőben van!", answers: { "benzinkút": 45, "wc": 25, "étterem": 15, "parkoló": 10, "kamion": 5 } },
+    { question: "Mondj egy dolgot, ami egy atlétika pályán van!", answers: { "futópálya": 45, "súlylökő golyó": 20, "magasugró léc": 15, "rajtkocka": 12, "homokozó": 8 } },
+    { question: "Mondj egy dolgot, ami egy anya táskájában van!", answers: { "pelenka": 35, "pénztárca": 25, "nedves törlőkendő": 20, "kulcs": 15, "telefon": 5 } },
+    { question: "Nevezz meg egy dolgot, amit egy állatkerti állat eszik!", answers: { "széna": 35, "hús": 25, "gyümölcs": 20, "hal": 15, "zöldség": 5 } },
+    { question: "Mondj egy dolgot, amit egy álarcosbálon viselsz!", answers: { "álarc": 60, "jelmez": 25, "paróka": 10, "kalap": 3, "kesztyű": 2 } },
+    { question: "Mondj egy dolgot, ami egy akupunktúrás kezelésen van!", answers: { "tű": 60, "páciens": 15, "kezelőágy": 10, "orvos": 8, "relaxáció": 7 } },
+    { question: "Mondj egy dolgot, amit egy ablakpárkányon tartasz!", answers: { "virág": 60, "kaktusz": 15, "dísztárgy": 10, "gyertya": 8, "könyv": 7 } },
+    { question: "Mondj egy dolgot, amit egy biciklin javítasz!", answers: { "lánc": 40, "gumi": 35, "fék": 10, "kerék": 8, "ülés": 7 } },
+    { question: "Mondj egy dolgot, ami egy ébresztőórán van!", answers: { "számok": 40, "mutató": 30, "gomb": 15, "kijelző": 10, "szundi gomb": 5 } },
+    { question: "Mondj egy dolgot, amit egy diétában elhagysz!", answers: { "cukor": 45, "kenyér": 25, "csoki": 15, "tészta": 10, "zsír": 5 } },
+    { question: "Mondj egy dolgot, amit egy detektívregényben olvasol!", answers: { "gyilkosság": 40, "nyomozó": 25, "nyom": 15, "rejtély": 12, "gyanúsított": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy edzőteremben van!", answers: { "súlyzó": 40, "futópad": 30, "tükör": 15, "edző": 10, "kulacs": 5 } },
+    { question: "Mondj egy dolgot, ami egy zokniban lehet a mosás után!", answers: { "semmi": 40, "lyuk": 30, "szösz": 15, "párja hiányzik": 10, "pénz": 5 } },
+    { question: "Mondj egy dolgot, amit egy ápolónő ad neked!", answers: { "injekció": 45, "gyógyszer": 30, "lázmérő": 10, "vérnyomásmérő": 8, "jó tanács": 7 } },
+    { question: "Nevezz meg egy dolgot, amit egy gyerek karácsonyra kér!", answers: { "játék": 40, "lego": 25, "kutya": 15, "bicikli": 12, "telefon": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy gőzmozdonyból jön ki!", answers: { "gőz": 55, "füst": 30, "szénpor": 8, "hang": 5, "szikra": 2 } },
+    { question: "Mondj egy dolgot, amitől valaki ásít!", answers: { "álmosság": 55, "unalom": 25, "fáradtság": 10, "ha más is ásít": 8, "levegőhiány": 2 } },
+    { question: "Mondj egy dolgot, ami egy madárfészekben van!", answers: { "tojás": 50, "fióka": 30, "ág": 10, "toll": 8, "sár": 2 } },
+    { question: "Mondj egy dolgot, amit egy testépítő csinál!", answers: { "súlyt emel": 55, "pózol": 20, "eszik": 10, "feszít": 8, "edz": 7 } },
+    { question: "Nevezz meg egy szuperhős képességet!", answers: { "repülés": 45, "szupererő": 30, "láthatatlanság": 10, "gyorsaság": 8, "pókháló lövés": 7 } },
+    { question: "Mondj egy dolgot, ami egy versenypálya mellett van!", answers: { "nézőtér": 45, "boxutca": 25, "kordon": 15, "hirdetőtábla": 10, "bíró": 5 } },
+    { question: "Mondj egy dolgot, amit egy utcaseprő használ!", answers: { "seprű": 50, "lapát": 30, "kuka": 10, "takarítókocsi": 8, "kesztyű": 2 } },
+    { question: "Mondj egy dolgot, ami egy üvegházban van!", answers: { "növény": 45, "paradicsom": 25, "meleg": 15, "pára": 10, "föld": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy videójátékban van!", answers: { "pálya": 35, "karakter": 30, "ellenség": 15, "pontszám": 12, "élet": 8 } },
+    { question: "Mondj egy dolgot, amit egy vándorcirkuszban látsz!", answers: { "sátor": 40, "lakókocsi": 25, "artista": 15, "bohóc": 12, "állat": 8 } },
+    { question: "Mondj egy dolgot, ami egy ügyvédnél van!", answers: { "aktatáska": 35, "törvénykönyv": 30, "öltöny": 15, "ügyfél": 12, "irat": 8 } },
+    { question: "Mondj egy dolgot, amit egy takarítónő csinál!", answers: { "porszívózik": 40, "felmos": 30, "port töröl": 15, "szemetet visz ki": 10, "ablakot pucol": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy tinédzser szobájában van!", answers: { "rendetlenség": 35, "poszter": 30, "számítógép": 15, "ágy": 12, "telefon": 8 } },
+    { question: "Mondj egy dolgot, amit egy turista vásárol!", answers: { "hűtőmágnes": 45, "képeslap": 25, "szuvenír": 15, "póló": 10, "térkép": 5 } },
+    { question: "Mondj egy dolgot, amit egy színész csinál a színpadon!", answers: { "szerepet játszik": 45, "szöveget mond": 25, "mozog": 15, "énekel": 10, "meghajol": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy szakácskönyvben van!", answers: { "recept": 55, "hozzávalók": 20, "kép": 10, "leírás": 8, "főzési idő": 7 } },
+    { question: "Mondj egy dolgot, ami egy személyi igazolványon van!", answers: { "fénykép": 45, "név": 25, "születési dátum": 15, "aláírás": 10, "lakcím": 5 } },
+    { question: "Mondj egy dolgot, ami egy síparadicsomban van!", answers: { "hóágyú": 35, "sífelvonó": 30, "hütte": 15, "síoktató": 12, "síkölcsönző": 8 } },
+    { question: "Mondj egy dolgot, ami egy rablónál van!", answers: { "maszk": 40, "zsák": 25, "fegyver": 15, "kesztyű": 12, " menekülő autó": 8 } },
+    { question: "Mondj egy dolgot, ami egy rádióstúdióban van!", answers: { "mikrofon": 50, "fejhallgató": 20, "keverőpult": 15, "műsorvezető": 10, "számítógép": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy piramis belsejében van!", answers: { "múmia": 45, "szarkofág": 25, "kincs": 10, "folyosó": 8, "csapda": 7 } },
+    { question: "Mondj egy dolgot, amit egy porszívó felszív!", answers: { "por": 50, "morzsa": 25, "hajszál": 10, "szösz": 8, "pénzérme": 7 } },
+    { question: "Mondj egy dolgot, ami egy rendőrségi kihallgatáson van!", answers: { "rendőr": 35, "gyanúsított": 30, "lámpa": 15, "jegyzőkönyv": 12, "tükör": 8 } },
+    { question: "Mondj egy dolgot, amit egy parfümboltban érzel!", answers: { "illat": 55, "parfüm": 25, "alkohol": 10, "virágillat": 8, "gyümölcsillat": 2 } },
+    { question: "Mondj egy dolgot, ami egy operettben van!", answers: { "ének": 40, "tánc": 25, "jelmez": 15, "zenekar": 12, "szerelmi szál": 8 } },
+    { question: "Mondj egy dolgot, ami egy optikusnál van!", answers: { "szemüveg": 45, "lencse": 25, "vizsgálótábla": 15, "szemüvegtok": 10, "optikus": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy motorháztető alatt van!", answers: { "motor": 55, "akkumulátor": 20, "olaj": 10, "kábelek": 8, "hűtővíz": 7 } },
+    { question: "Mondj egy dolgot, ami egy nemzeti parkban van!", answers: { "turistaút": 35, "fa": 25, "állat": 20, "kilátó": 15, "parkőr": 5 } },
+    { question: "Mondj egy dolgot, ami egy mobiltelefonon van!", answers: { "alkalmazás": 40, "kijelző": 25, "kamera": 15, "akkumulátor": 12, "gomb": 8 } },
+    { question: "Mondj egy dolgot, ami egy macskajáték!", answers: { "gombolyag": 35, "játékegér": 30, "lézer mutató": 15, "tollas pálca": 12, "csörgő labda": 8 } },
+    { question: "Mondj egy dolgot, ami egy maratonon van!", answers: { "futó": 40, "célvonal": 25, "frissítőpont": 15, "rajtszám": 12, "fáradtság": 8 } },
+    { question: "Mondj egy dolgot, ami egy lovardában van!", answers: { "ló": 50, "istálló": 20, "széna": 15, "nyereg": 10, "lovász": 5 } },
+    { question: "Mondj egy dolgot, ami egy lufiárusnál van!", answers: { "lufi": 55, "hélium palack": 20, "gyerek": 10, "zsineg": 8, "pénz": 7 } },
+    { question: "Mondj egy dolgot, ami egy korcsolyapályán van!", answers: { "jég": 50, "korcsolyázó": 25, "palánk": 10, "zene": 8, "forralt bor": 7 } },
+    { question: "Mondj egy dolgot, ami egy konyhakertben van!", answers: { "kapa": 35, "veteményes": 30, "gyom": 15, "locsolókanna": 12, "madárijesztő": 8 } },
+    { question: "Mondj egy dolgot, ami egy karácsonyi vásárban van!", answers: { "forralt bor": 40, "kürtőskalács": 30, "fények": 10, "tömeg": 8, "kézműves termék": 7 } },
+    { question: "Mondj egy dolgot, ami egy kórházi szobában van!", answers: { "ágy": 45, "infúzió": 25, "nővérhívó": 10, "beteg": 8, "látogató": 7 } },
+    { question: "Mondj egy dolgot, ami egy kávéfőzőben van!", answers: { "kávé": 50, "víz": 30, "zacc": 10, "szűrő": 8, "gőz": 2 } },
+    { question: "Mondj egy dolgot, amit egy kapitány irányít!", answers: { "hajó": 60, "repülőgép": 20, "csapat": 10, "tengeralattjáró": 8, "űrhajó": 2 } },
+    { question: "Mondj egy dolgot, ami egy jégbarlangban van!", answers: { "jég": 55, "jégcsap": 25, "hideg": 10, "sötétség": 8, "visszhang": 2 } },
+    { question: "Mondj egy dolgot, ami egy ingatlanirodában van!", answers: { "ingatlanügynök": 35, "hirdetés": 30, "számítógép": 15, "alaprajz": 12, "ügyfél": 8 } },
+    { question: "Mondj egy dolgot, ami egy homokozóban van!", answers: { "homok": 50, "vödör": 20, "lapát": 15, "gyerek": 10, "homoksüti": 5 } },
+    { question: "Mondj egy dolgot, ami egy halászhajón van!", answers: { "háló": 50, "halász": 20, "hal": 15, "csónakmotor": 10, "horgony": 5 } },
+    { question: "Mondj egy dolgot, ami egy horrorfilmben van!", answers: { "ijesztgetés": 35, "szörny": 30, "vér": 15, "sikoly": 12, "sötétség": 8 } },
+    { question: "Mondj egy dolgot, ami egy hangversenyteremben van!", answers: { "zenekar": 35, "karmester": 30, "közönség": 15, "szék": 12, "hegedű": 8 } },
+    { question: "Mondj egy dolgot, ami egy galériában van!", answers: { "festmény": 50, "szobor": 25, "látogató": 10, "teremőr": 8, "katalógus": 7 } },
+    { question: "Mondj egy dolgot, ami egy focipálya közepén van!", answers: { "középkör": 45, "labda": 30, "kezdőrúgás": 10, "bíró": 8, "fű": 7 } },
+    { question: "Mondj egy dolgot, ami egy fitnesz órán van!", answers: { "edző": 40, "zene": 25, "gyakorlat": 15, "izzadság": 12, "súlyzó": 8 } },
+    { question: "Mondj egy dolgot, ami egy esküvői meghívón van!", answers: { "dátum": 40, "nevek": 30, "helyszín": 15, "időpont": 10, "idézet": 5 } },
+    { question: "Mondj egy dolgot, ami egy fagylaltozóban van!", answers: { "fagylalt": 50, "tölcsér": 25, "pultos": 10, "kanál": 8, "öntet": 7 } },
+    { question: "Mondj egy dolgot, ami egy fán van!", answers: { "levél": 45, "ág": 25, "törzs": 10, "gyümölcs": 8, "madár": 7 } },
+    { question: "Mondj egy dolgot, ami egy ékszeren van!", answers: { "kő": 40, "csat": 25, "gravírozás": 15, "lánc": 12, "medál": 8 } },
+    { question: "Mondj egy dolgot, ami egy csomagban van!", answers: { "ajándék": 40, "számla": 25, "térkitöltő anyag": 15, "megrendelt termék": 12, "doboz": 8 } },
+    { question: "Mondj egy dolgot, ami egy dobfelszerelés része!", answers: { "pergődob": 35, "lábdob": 25, "cintányér": 20, "dobverő": 15, "tam": 5 } },
+    { question: "Mondj egy dolgot, ami egy csatornában van!", answers: { "víz": 40, "szennyvíz": 25, "patkány": 15, "szemét": 12, "csatornafedél": 8 } },
+    { question: "Mondj egy dolgot, ami egy csillagképen van!", answers: { "csillag": 60, "göncölszekér": 15, "orion": 10, "alakzat": 8, "égbolt": 7 } },
+    { question: "Mondj egy dolgot, ami egy buszmegállóban van!", answers: { "menetrend": 40, "pad": 25, "várakozó ember": 15, "busz": 12, "szemetes": 8 } },
+    { question: "Mondj egy dolgot, ami egy bárányon van!", answers: { "gyapjú": 60, "báránybőr": 15, "bégetés": 10, "láb": 8, "fej": 7 } },
+    { question: "Mondj egy dolgot, ami egy borítékban van!", answers: { "levél": 50, "számla": 20, "képeslap": 15, "pénz": 10, "meghívó": 5 } },
+    { question: "Mondj egy dolgot, ami egy bográcsban fő!", answers: { "gulyás": 45, "pörkölt": 25, "halászlé": 15, "lecsó": 10, "babgulyás": 5 } },
+    { question: "Mondj egy dolgot, ami egy biliárdasztalon van!", answers: { "golyó": 50, "dákó": 25, "lyuk": 10, "posztó": 8, "kréta": 7 } },
+    { question: "Mondj egy dolgot, ami egy bíróságon történik!", answers: { "tárgyalás": 45, "ítélethirdetés": 25, "eskü": 10, "tanúvallomás": 8, "vád": 7 } },
+    { question: "Mondj egy dolgot, ami egy autósiskolában van!", answers: { "oktató": 40, "tanulóautó": 25, "kresz tábla": 15, "tesztlap": 12, "tanterem": 8 } },
+    { question: "Mondj egy dolgot, ami egy babakocsiban van!", answers: { "baba": 55, "cumi": 15, "takaró": 10, "játék": 8, "pelenka": 7 } },
+    { question: "Mondj egy dolgot, ami egy ágy alatt van!", answers: { "porcica": 45, "papucs": 25, "szörny": 10, "doboz": 8, "zokni": 7 } },
+    { question: "Mondj egy dolgot, amit egy állásinterjún kérdeznek!", answers: { "miért szeretne itt dolgozni": 40, "mik az erősségei": 25, "hol látja magát 5 év múlva": 15, "mennyi a fizetési igénye": 12, "tud csapatban dolgozni": 8 } },
+    { question: "Mondj egy dolgot, ami egy áruház hangosbemondóján szól!", answers: { "akció": 45, "reklám": 25, "elveszett gyerek": 10, "zene": 8, "zárási információ": 7 } },
+    { question: "Mondj egy dolgot, ami egy aluljáróban van!", answers: { "hajléktalan": 35, "zenész": 25, "graffiti": 15, "lépcső": 12, "bolt": 8 } },
+    { question: "Mondj egy dolgot, ami egy arcmaszk mögött van!", answers: { "arc": 45, "száj": 25, "orr": 15, "mosoly": 10, "bajusz": 5 } },
+    { question: "Mondj egy dolgot, ami egy akciófilmben történik!", answers: { "robbbanás": 45, "autósüldözés": 25, "lövöldözés": 15, "verekedés": 10, "túszdráma": 5 } },
+    { question: "Nevezz meg egy dolgot, amit a születésnapodon kapsz!", answers: { "ajándék": 45, "torta": 30, "puszi": 10, "köszöntés": 8, "virág": 7 } },
+    { question: "Nevezz meg egy dolgot, ami a kávéba való!", answers: { "cukor": 45, "tej": 30, "tejszín": 10, "méz": 8, "koffein": 7 } },
+    { question: "Mondj egy dolgot, amit egy kutya kerget!", answers: { "macska": 50, "labda": 25, "postás": 10, "farkát": 8, "biciklis": 7 } },
+    { question: "Nevezz meg egy dolgot, ami egy strandon zavaró!", answers: { "hangos zene": 35, "homok a törölközőn": 25, "tömeg": 15, "darazsak": 12, "leégés": 8 } },
+    { question: "Mondj egy dolgot, amit a téli ünnepek alatt eszel!", answers: { "bejgli": 45, "töltött káposzta": 25, "halászlé": 15, "mézeskalács": 10, "szaloncukor": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy telefonbeszélgetés végén elhangzik!", answers: { "szia": 50, "viszlát": 20, "puszi": 15, "majd hívlak": 10, "vigyázz magadra": 5 } },
+    { question: "Mondj egy dolgot, amit egy orvos javasol!", answers: { "pihenés": 40, "sok folyadék": 25, "gyógyszer szedése": 15, "diéta": 12, "mozgás": 8 } },
+    { question: "Nevezz meg egy dolgot, amit egy színházi öltözőben találsz!", answers: { "jelmez": 40, "smink": 25, "paróka": 15, "tükör": 12, "színész": 8 } },
+    { question: "Mondj egy dolgot, amit egy esküvőn isznak!", answers: { "pezsgő": 45, "bor": 25, "pálinka": 15, "üdítő": 10, "víz": 5 } },
+    { question: "Nevezz meg egy dolgot, amitől valaki allergiás lehet!", answers: { "parlagfű": 45, "por": 20, "mogyoró": 15, "macskaszőr": 12, "eper": 8 } },
+    { question: "Mondj egy dolgot, ami egy állatkertben tilos!", answers: { "állatokat etetni": 55, "átnyúlni a kerítésen": 25, "szemetelni": 10, "kiabálni": 7, "dohányozni": 3 } },
+    { question: "Mondj egy dolgot, ami egy lufiban van!", answers: { "levegő": 50, "hélium": 35, "víz": 8, "konfetti": 5, "semmi": 2 } },
+    { question: "Nevezz meg egy dolgot, ami egy strandon történik!", answers: { "napozás": 40, "úszás": 30, "várépítés": 15, "lángos evés": 10, "labdázás": 5 } },
+    { question: "Mondj egy dolgot, ami egy táncos csinál!", answers: { "táncol": 50, "forog": 20, "ugrik": 15, "hajol": 10, "mosolyog": 5 } },
+    { question: "Mondj egy dolgot, amit egy horgásztavon van!", answers: { "horgász": 45, "hal": 30, "stég": 10, "csónak": 8, "nádas": 7 } },
+    { question: "Mondj egy dolgot, ami egy szerszámos övön lóg!", answers: { "kalapács": 45, "csavarhúzó": 25, "mérőszalag": 15, "fogó": 10, "csavarok": 5 } },
+    { question: "Mondj egy dolgot, ami egy eljegyzéskor történik!", answers: { "lánykérés": 50, "gyűrű felhúzása": 30, "igen": 10, "térdre ereszkedés": 8, "pezsgőbontás": 2 } },
+    { question: "Mondj egy dolgot, amit egy szuperhős képessége!", answers: { "repülés": 45, "szupererő": 30, "láthatatlanság": 10, "gyorsaság": 8, "pókháló lövés": 7 } },
+    { question: "Nevezz meg egy dolgot, ami egy iskolatáskában van!", answers: { "könyv": 40, "füzet": 30, "tolltartó": 15, "tízórai": 10, "vonalzó": 5 } },
+    { question: "Mondj egy házimunkát, amit senki sem szeret csinálni!", answers: { "mosogatás": 35, "wc pucolás": 30, "vasalás": 20, "porszívózás": 10, "szemetet levinni": 5 } },
+    { question: "Nevezz meg egy időjárási jelenséget!", answers: { "eső": 40, "napsütés": 25, "szél": 15, "hó": 12, "villámlás": 8 } },
+    { question: "Mondj egy dolgot, amit egy hűtőben találsz!", answers: { "tej": 40, "tojás": 25, "sajt": 15, "felvágott": 12, "joghurt": 8 } },
+    { question: "Nevezz meg egy híres mesehőst!", answers: { "Piroska": 35, "Hófehérke": 30, "Hamupipőke": 20, "Jancsi és Juliska": 10, "a legkisebb fiú": 5 } },
+    { question: "Mit csinálsz Húsvétkor?", answers: { "tojást festek": 40, "locsolkodok": 30, "sonkát eszek": 15, "rokonokat látogatok": 10, "pihenek": 5 } },
+    { question: "Nevezz meg egy páros testrészt!", answers: { "szem": 45, "kéz": 25, "fül": 15, "láb": 10, "vese": 5 } },
+    { question: "Mondj egy állatot, amit egy farmon tartanak!", answers: { "tehén": 35, "tyúk": 30, "disznó": 20, "ló": 10, "birka": 5 } },
+    { question: "Nevezz meg egy alapvető érzelmet!", answers: { "öröm": 40, "szomorúság": 25, "harag": 20, "félelem": 10, "meglepődés": 5 } },
+    { question: "Nevezz meg egy ruhadarabot, amit nyáron viselsz!", answers: { "póló": 40, "rövidnadrág": 30, "fürdőruha": 15, "szandál": 10, "ruha": 5 } },
+    { question: "Nevezz meg egy tömegközlekedési eszközt!", answers: { "busz": 50, "villamos": 20, "metró": 15, "vonat": 10, "trolibusz": 5 } },
+    { question: "Mondj egy hobbit, amit egyedül is lehet csinálni!", answers: { "olvasás": 40, "rejtvényfejtés": 20, "kertészkedés": 15, "bélyeggyűjtés": 13, "horgászat": 12 } },
+    { question: "Nevezz meg egy dolgot, ami egy fürdőszobában van!", answers: { "fogkefe": 40, "szappan": 25, "törölköző": 15, "wc papír": 12, "kád": 8 } },
+    { question: "Mondj egy állathangot!", answers: { "vau": 40, "miau": 30, "mú": 15, "röf": 10, "csip-csip": 5 } },
+    { question: "Nevezz meg egy foglalkozást, ahol egyenruhát viselnek!", answers: { "rendőr": 45, "tűzoltó": 25, "katona": 15, "orvos": 10, "postás": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy erdőben találsz!", answers: { "fa": 50, "gomba": 20, "toboz": 15, "őz": 10, "erdei ösvény": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy konyhafiókban van!", answers: { "evőeszköz": 40, "kés": 25, "villa": 15, "kanál": 12, "fakanál": 8 } },
+    { question: "Mit reggelizel leggyakrabban?", answers: { "szendvics": 35, "müzli": 25, "tojás": 20, "péksütemény": 15, "virsli": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy pénztárcában van!", answers: { "pénz": 40, "bankkártya": 30, "személyi igazolvány": 15, "fénykép": 10, "bérlet": 5 } },
+    { question: "Mit csinálsz közvetlenül lefekvés előtt?", answers: { "fogat mosok": 45, "olvasok": 20, "tévét nézek": 15, "pizsamát veszek": 12, "iszok egy pohár vizet": 8 } },
+    { question: "Nevezz meg egy piros gyümölcsöt!", answers: { "eper": 40, "alma": 25, "cseresznye": 15, "málna": 12, "ribizli": 8 } },
+    { question: "Nevezz meg egy zöldséget, amiből levest lehet főzni!", answers: { "répa": 35, "krumpli": 25, "borsó": 20, "brokkoli": 15, "karfiol": 5 } },
+    { question: "Nevezz meg egy népszerű társasjátékot!", answers: { "monopoly": 40, "gazdálkodj okosan": 25, "activity": 15, "ki nevet a végén?": 12, "scrabble": 8 } },
+    { question: "Mondj egy okot, amiért valaki nevet!", answers: { "viccet hallott": 40, "csiklandozzák": 25, "boldog": 15, "vicces filmet néz": 12, "örül valaminek": 8 } },
+    { question: "Nevezz meg egy dolgot, ami ragadós!", answers: { "méz": 45, "ragasztó": 20, "lekvár": 15, "szirup": 12, "nyalóka": 8 } },
+    { question: "Nevezz meg egy dolgot, ami általában kerek!", answers: { "labda": 40, "kerék": 25, "tányér": 15, "pénzérme": 12, "óra": 8 } },
+    { question: "Nevezz meg egy iskolai tantárgyat!", answers: { "matematika": 35, "magyar": 25, "történelem": 20, "testnevelés": 15, "földrajz": 5 } },
+    { question: "Nevezz meg egy irodaszert!", answers: { "toll": 40, "papír": 25, "gémkapocs": 15, "tűzőgép": 12, "lyukasztó": 8 } },
+    { question: "Mondj egy dolgot, amit egy tanár mond az órán!", answers: { "csendet kérek": 40, "üljetek le": 20, "írjátok fel": 15, "nyissátok ki a könyvet": 13, "ki felel ma?": 12 } },
+    { question: "Nevezz meg egy népszerű háziállatot!", answers: { "kutya": 50, "macska": 30, "hörcsög": 8, "aranyhal": 7, "tengerimalac": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy virágoskertben nő!", answers: { "rózsa": 35, "tulipán": 25, "fű": 15, "gyom": 13, "ibolya": 12 } },
+    { question: "Mondj egy dolgot, amit egy születésnapi zsúron csinálnak!", answers: { "tortát esznek": 40, "ajándékot bontanak": 25, "játszanak": 15, "boldog szülinapot énekelnek": 12, "zsákbamacska": 8 } },
+    { question: "Nevezz meg egy híres magyar ételt!", answers: { "gulyásleves": 40, "pörkölt": 20, "töltött káposzta": 15, "lángos": 13, "rántott hús": 12 } },
+    { question: "Mondj egy dolgot, amit a tengerparton gyűjthetsz!", answers: { "kagyló": 50, "kavics": 25, "csigaház": 10, "szemét": 8, "üvegdarab": 7 } },
+    { question: "Nevezz meg egy dolgot, ami egy repülőgépen van!", answers: { "ülés": 40, "biztonsági öv": 20, "légikísérő": 15, "pilóta": 13, "mentőmellény": 12 } },
+    { question: "Mondj egy okot, amiért valaki sír!", answers: { "szomorú": 40, "fájdalom": 25, "meghatódott": 15, "hagymát pucol": 12, "örömében": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy játszótéren van!", answers: { "hinta": 45, "csúszda": 25, "homokozó": 15, "mászóka": 10, "libikóka": 5 } },
+    { question: "Mondj egy süteményt, amit a nagymama szokott sütni!", answers: { "almás pite": 35, "pogácsa": 25, "kalács": 20, "kakaós csiga": 15, "mákos bejgli": 5 } },
+    { question: "Nevezz meg egy dolgot, ami édes!", answers: { "csoki": 40, "cukor": 20, "méz": 15, "fagyi": 13, "sütemény": 12 } },
+    { question: "Mondj egy dolgot, ami savanyú!", answers: { "citrom": 50, "ecet": 20, "savanyú cukor": 10, "kovászos uborka": 8, "joghurt": 7 } },
+    { question: "Nevezz meg egy dolgot, ami egy babaszobában van!", answers: { "kiságy": 40, "pelenkázóasztal": 20, "játék": 15, "cumi": 13, "bébiőr": 12 } },
+    { question: "Nevezz meg egy fúvós hangszert!", answers: { "fuvola": 35, "klarinét": 25, "trombita": 20, "szaxofon": 15, "furulya": 5 } },
+    { question: "Mondj egy dolgot, amit egy tűzoltó használ!", answers: { "víztömlő": 40, "létra": 25, "sisak": 15, "fejsze": 12, "tűzoltóautó": 8 } },
+    { question: "Mondj egy dolgot, amit egy könyvtárban tilos csinálni!", answers: { "hangoskodni": 50, "enni-inni": 25, "telefonálni": 10, "szaladgálni": 8, "firkálni a könyvbe": 7 } },
+    { question: "Mondj egy dolgot, amit az őszi erdőben találsz!", answers: { "színes falevél": 35, "gesztenye": 30, "makk": 15, "gomba": 12, "toboz": 8 } },
+    { question: "Nevezz meg egy európai fővárost!", answers: { "párizs": 30, "london": 25, "róma": 20, "bécs": 15, "berlin": 10 } },
+    { question: "Mondj egy dolgot, amit egy postás csinál!", answers: { "levelet hoz": 50, "csenget": 15, "bedobja a levelet": 10, "csomagot kézbesít": 8, "szórólapot oszt": 7 } },
+    { question: "Mondj egy dolgot, amit a fodrász használ!", answers: { "olló": 45, "fésű": 20, "hajszárító": 15, "hajvágógép": 12, "hajlakk": 8 } },
+    { question: "Nevezz meg egy dolgot, amit egy garázsban tartasz!", answers: { "autó": 50, "szerszám": 20, "bicikli": 10, "fűnyíró": 8, "autógumi": 7 } },
+    { question: "Nevezz meg egy bolygót a Naprendszerben!", answers: { "föld": 35, "mars": 25, "jupiter": 15, "szaturnusz": 13, "vénusz": 12 } },
+    { question: "Mondj egy dolgot, ami egy bankban történik!", answers: { "pénzt vesznek fel": 40, "sorban állnak": 20, "pénzt fizetnek be": 15, "számlát nyitnak": 13, "hitelt intéznek": 12 } },
+    { question: "Mondj egy dolgot, amit egy esős napon csinálsz otthon!", answers: { "filmet nézek": 40, "olvasok": 25, "társasozok": 15, "alszom": 12, "sütit sütök": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy szobában fényt ad!", answers: { "lámpa": 50, "villanykörte": 20, "ablak": 10, "gyertya": 8, "csillár": 7 } },
+    { question: "Mondj egy dolgot, amit egy varrónő használ!", answers: { "cérna": 35, "tű": 30, "varrógép": 15, "olló": 12, "gyűszű": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy újságban van!", answers: { "hír": 40, "cikk": 20, "fénykép": 15, "hirdetés": 13, "rejtvény": 12 } },
+    { question: "Mondj egy dolgot, amit egy hegy tetején látsz!", answers: { "a kilátás": 40, "kereszt": 20, "kilátó": 15, "túrázó": 13, "zászlórúd": 12 } },
+    { question: "Nevezz meg egy dolgot, ami egy múzeumban van kiállítva!", answers: { "festmény": 40, "szobor": 20, "régi pénz": 15, "csontváz": 13, "koronázási ékszer": 12 } },
+    { question: "Mondj egy dolgot, amit egy fogorvos csinál!", answers: { "fogat töm": 40, "fogat húz": 25, "fúr": 15, "fogkövet szed le": 12, "röntgent készít": 8 } },
+    { question: "Nevezz meg egy dolgot, ami a reggeli készülődés része!", answers: { "felöltözés": 35, "fogmosás": 30, "reggelizés": 15, "fésülködés": 12, "ébresztő lekapcsolása": 8 } },
+    { question: "Mondj egy dolgot, ami egy tó partján van!", answers: { "stég": 35, "nádas": 25, "horgász": 15, "pad": 13, "csónak": 12 } },
+    { question: "Mondj egy dolgot, amit a Mikulás csinál!", answers: { "ajándékot hoz": 50, "a kéményen ereszkedik le": 15, "a szánján repül": 10, "olvassa a gyerekek levelét": 8, "megtölti a csizmát": 7 } },
+    { question: "Mondj egy dolgot, ami egy görög salátában van!", answers: { "feta sajt": 40, "olíva bogyó": 25, "paradicsom": 15, "uborka": 12, "lila hagyma": 8 } },
+    { question: "Nevezz meg egy dolgot, ami az égen van nappal!", answers: { "nap": 45, "felhő": 25, "madár": 10, "repülő": 8, "kék ég": 7 } },
+    { question: "Mondj egy dolgot, amit egy virágboltban lehet kapni!", answers: { "vágott virág": 40, "cserepes virág": 25, "virágföld": 15, "koszorú": 12, "váza": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy teniszmeccshez kell!", answers: { "ütő": 40, "labda": 30, "háló": 15, "pálya": 10, "bíró": 5 } },
+    { question: "Mondj egy okot, amiért valaki elpirul!", answers: { "zavarban van": 45, "szégyelli magát": 20, "bókot kapott": 15, "melege van": 12, "hazudik": 8 } },
+    { question: "Nevezz meg egy dolgot, amit egy pék használ!", answers: { "liszt": 40, "sütő": 25, "sodrófa": 15, "élesztő": 12, "dagasztógép": 8 } },
+    { question: "Mondj egy dolgot, amitől valaki tüsszent!", answers: { "por": 40, "bors": 25, "allergia": 20, "nátha": 10, "erős fény": 5 } },
+    { question: "Nevezz meg egy dolgot, amit el lehet törni!", answers: { "pohár": 35, "tányér": 30, "szív": 15, "csont": 12, "ablak": 8 } },
+    { question: "Mondj egy okot, amiért kihagysz egy edzést!", answers: { "fáradtság": 40, "betegség": 30, "időhiány": 15, "izomláz": 10, "rossz idő": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy elsősegély dobozban van!", answers: { "sebtapasz": 45, "géz": 25, "fertőtlenítő": 15, "olló": 10, "fájdalomcsillapító": 5 } },
+    { question: "Milyen színű lehet egy taxi?", answers: { "sárga": 60, "fekete": 15, "fehér": 10, "kék": 8, "zöld": 7 } },
+    { question: "Mondj egy dolgot, amit egy csecsemő csinál!", answers: { "sír": 40, "alszik": 25, "eszik": 15, "gügyög": 12, "kakil": 8 } },
+    { question: "Nevezz meg egy dolgot, amit a körmödön viselsz!", answers: { "körömlakk": 50, "műköröm": 25, "csillámpor": 10, "körömdísz": 8, "kosz": 7 } },
+    { question: "Mondj egy dolgot, ami egy repülőtéren történik!", answers: { "várakozás": 35, "becsekkolás": 25, "biztonsági ellenőrzés": 20, "gép felszáll": 15, "útlevél-ellenőrzés": 5 } },
+    { question: "Nevezz meg egy dolgot, ami puha!", answers: { "párna": 40, "takaró": 25, "plüssállat": 15, "vatta": 12, "cica szőre": 8 } },
+    { question: "Nevezz meg egy dolgot, ami éles!", answers: { "kés": 45, "olló": 25, "tű": 15, "üvegszilánk": 10, "borotva": 5 } },
+    { question: "Nevezz meg egy dolgot, aminek kereke van!", answers: { "autó": 40, "bicikli": 25, "bevásárlókocsi": 15, "görkorcsolya": 12, "babakocsi": 8 } },
+    { question: "Mondj egy dolgot, amit a strandon lehet bérelni!", answers: { "napágy": 45, "napernyő": 30, "vízibicikli": 10, "szörfdeszka": 8, "jetski": 7 } },
+    { question: "Mondj egy dolgot, amitől megijedsz éjszaka!", answers: { "furcsa zaj": 40, "árnyék": 25, "pók": 15, "rossz álom": 12, "betörő": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy íróasztalon van!", answers: { "számítógép": 35, "lámpa": 25, "tolltartó": 20, "papírok": 15, "könyv": 5 } },
+    { question: "Nevezz meg egy klasszikus udvari játékot!", answers: { "bújócska": 40, "fogócska": 25, "kidobós": 15, "ugróiskola": 12, "számháború": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy esküvői tortán van!", answers: { "nászpár figura": 45, "marcipán": 20, "virág": 15, "gyöngy": 12, "tejszínhab": 8 } },
+    { question: "Mondj egy dolgot, amit egy szobafestő használ!", answers: { "ecset": 35, "festékhenger": 30, "festék": 15, "létra": 12, "takarófólia": 8 } },
+    { question: "Nevezz meg egy dolgot, amit a tévében nézel, de nem film!", answers: { "híradó": 35, "sorozat": 30, "sportközvetítés": 15, "valóságshow": 12, "rajzfilm": 8 } },
+    { question: "Mondj egy dolgot, amit szilveszterkor csinálsz!", answers: { "pezsgőt iszok": 40, "visszaszámolok": 25, "virslit eszek": 15, "tűzijátékot nézek": 12, "bulizok": 8 } },
+    { question: "Nevezz meg egy kenyérfajtát!", answers: { "fehér kenyér": 40, "rozskenyér": 20, "kifli": 15, "zsemle": 13, "teljes kiőrlésű": 12 } },
+    { question: "Mondj egy dolgot, ami egy szállodai szobában van!", answers: { "ágy": 40, "minibár": 20, "széf": 15, "tv": 13, "törölköző": 12 } },
+    { question: "Nevezz meg egy dolgot, amitől valaki jó sofőr!", answers: { "türelem": 35, "jó reflexek": 25, "szabályok ismerete": 20, "magabiztosság": 15, "nem idegeskedik": 5 } },
+    { question: "Mondj egy dolgot, amit egy kempingezéskor viszel magaddal!", answers: { "sátor": 45, "hálózsák": 25, "zseblámpa": 15, "szúnyogriasztó": 10, "bicska": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy varródobozban van!", answers: { "cérna": 40, "tű": 25, "gomb": 15, "olló": 12, "gyűszű": 8 } },
+    { question: "Nevezz meg egy dolgot, aminek szirénája van!", answers: { "rendőrautó": 40, "mentőautó": 30, "tűzoltóautó": 20, "légvédelmi sziréna": 5, "riasztó": 5 } },
+    { question: "Mondj egy dolgot, amit egy kertitörpe csinál!", answers: { "horgászik": 35, "talicskát tol": 25, "áll": 20, "integet": 15, "alszik": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy templomban van!", answers: { "pad": 35, "oltár": 25, "orgona": 20, "kereszt": 15, "pap": 5 } },
+    { question: "Mondj egy dolgot, amit egy mozi büféjében veszel!", answers: { "pattogatott kukorica": 50, "üdítő": 25, "nachos": 15, "gumicukor": 7, "jégkása": 3 } },
+    { question: "Nevezz meg egy dolgot, ami egy fűszerpolcon van!", answers: { "só": 35, "bors": 30, "pirospaprika": 20, "majoranna": 10, "fahéj": 5 } },
+    { question: "Mondj egy dolgot, amit egy pincér csinál!", answers: { "felveszi a rendelést": 40, "kihozza az ételt": 30, "leszedi az asztalt": 15, "hozza a számlát": 10, "ajánl": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy mosógépben van!", answers: { "ruha": 45, "mosószer": 25, "víz": 15, "öblítő": 10, "fél pár zokni": 5 } },
+    { question: "Mondj egy dolgot, amit egy kalapácsra ütsz!", answers: { "szög": 50, "az ujjad": 20, "véső": 15, "szeg": 10, "fadarab": 5 } },
+    { question: "Nevezz meg egy dolgot, ami a Föld körül kering!", answers: { "hold": 45, "műhold": 30, "űrállomás": 10, "űrszemét": 8, "aszteroida": 7 } },
+    { question: "Mondj egy okot, amiért valaki elkésik!", answers: { "elaludt": 40, "forgalmi dugó": 30, "nem jött a busz": 15, "nem talált parkolót": 10, "elfelejtette": 5 } },
+    { question: "Nevezz meg egy idegesítő rovart!", answers: { "szúnyog": 50, "légy": 25, "darázs": 10, "hangya": 8, "csótány": 7 } },
+    { question: "Mondj egy dolgot, amit egy színpadon látsz a színészen kívül!", answers: { "díszlet": 45, "függöny": 20, "reflektor": 15, "kellék": 12, "mikrofon": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy szendvicsben lehet a sajt mellett!", answers: { "sonka": 40, "paradicsom": 25, "saláta": 15, "paprika": 12, "vaj": 8 } },
+    { question: "Nevezz meg egy dolgot, amitől büdös lehet a hűtő!", answers: { "romlott étel": 35, "hagyma": 25, "sajt": 20, "hal": 15, "kiömlött tej": 5 } },
+    { question: "Mondj egy dolgot, amit egy eladó mond a boltban!", answers: { "segíthetek?": 40, "más valamit?": 25, "kártyával vagy készpénzzel?": 15, "köszönöm a vásárlást": 12, "blokkot adhatok?": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy madáretetőben van!", answers: { "napraforgómag": 45, "cinkegolyó": 25, "madár": 15, "köles": 10, "dió": 5 } },
+    { question: "Mondj egy dolgot, amit egy dzsinn teljesít!", answers: { "kívánság": 60, "gazdagságot": 15, "boldogságot": 10, "hatalmat": 8, "szabadságot": 7 } },
+    { question: "Nevezz meg egy dolgot, amitől koszos lesz a cipőd!", answers: { "sár": 50, "por": 20, "fű": 10, "hó": 8, " pocsolya": 7 } },
+    { question: "Mondj egy dolgot, amit egy majom eszik!", answers: { "banán": 60, "gyümölcs": 15, "magvak": 10, "levél": 8, "rovarok": 7 } },
+    { question: "Nevezz meg egy dolgot, ami egy kesztyűtartóban van!", answers: { "forgalmi engedély": 35, "napszemüveg": 25, "papírzsebkendő": 15, "térkép": 12, "CD": 8 } },
+    { question: "Mondj egy dolgot, amit egy fotós csinál!", answers: { "fényképez": 45, "vakuzik": 20, "élesít": 15, "modellt instruál": 12, "képet szerkeszt": 8 } },
+    { question: "Nevezz meg egy tipikus Valentin-napi ajándékot!", answers: { "csoki": 40, "virág": 30, "plüssmaci": 15, "ékszer": 10, "romantikus vacsora": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy teafilterben van!", answers: { "teafű": 50, "gyógynövény": 20, "gyümölcsdarabok": 15, "cérna": 10, "papír": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy akváriumban van!", answers: { "hal": 45, "víz": 25, "kavics": 15, "vízinövény": 10, "levegőztető": 5 } },
+    { question: "Mondj egy dolgot, amit egy birkózó csinál!", answers: { "földrevitel": 35, "fogást keres": 25, "gáncsol": 15, "tus": 13, "izzad": 12 } },
+    { question: "Mondj egy dolgot, amitől valaki csuklik!", answers: { "gyorsan evett": 35, "szénsavasat ivott": 25, "levegőt nyelt": 20, "idegesség": 15, "ijedtség": 5 } },
+    { question: "Nevezz meg egy dolgot, amit egy kém használ!", answers: { "álruha": 35, "lehallgató készülék": 25, "rejtett kamera": 20, "hangtompítós pisztoly": 15, "titkosírás": 5 } },
+    { question: "Mondj egy dolgot, ami egy tornazsákban van!", answers: { "tornacipő": 40, "póló": 25, "törölköző": 15, "kulacs": 12, "dezodor": 8 } },
+    { question: "Nevezz meg egy állatot, ami egy barlangban él!", answers: { "denevér": 50, "medve": 25, "pók": 10, "giliszta": 8, "ősember": 7 } },
+    { question: "Mondj egy dolgot, amit egy kutya csinál, ha örül!", answers: { "csóválja a farkát": 50, "ugrál": 20, "nyalogat": 15, "vakkant": 10, "liheg": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy vulkánból tör ki!", answers: { "láva": 50, "hamu": 25, "füst": 10, "kőzet": 8, "gáz": 7 } },
+    { question: "Mondj egy dolgot, ami egy postabélyegen van!", answers: { "érték (szám)": 35, "kép": 30, "ország neve": 20, "évszám": 10, "címer": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy fagylaltkehely tetején van!", answers: { "tejszínhab": 40, "csokiöntet": 25, "ostya": 15, "gyümölcs": 12, "cukorszórás": 8 } },
+    { question: "Nevezz meg egy helyet, ahol visszhang van!", answers: { "barlang": 40, "hegyekben": 25, "alagút": 15, "üres szoba": 12, "kút": 8 } },
+    { question: "Nevezz meg egy dolgot, amit egy gyógyszertárban veszel!", answers: { "fájdalomcsillapító": 40, "vitamin": 25, "köptető": 15, "sebtapasz": 12, "lázcsillapító": 8 } },
+    { question: "Mondj egy dolgot, amit ellenőrzöl, mielőtt elindulsz otthonról!", answers: { "kulcs": 35, "pénztárca": 30, "telefon": 20, "hogy bezártam-e az ajtót": 10, "hogy lekapcsoltam-e a villanyt": 5 } },
+    { question: "Nevezz meg egy dolgot, aminek lyuk van a közepén!", answers: { "fánk": 40, "mentőöv": 25, "cd lemez": 15, "perec": 12, "gomb": 8 } },
+    { question: "Mondj egy okot, amiért valaki rádiót hallgat!", answers: { "zene": 45, "hírek": 20, "autóvezetés közben": 15, "forgalmi információk": 12, "háttérzajnak": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy kaszinóban van!", answers: { "nyerőgép": 40, "rulett asztal": 25, "zseton": 20, "kártya": 10, "pénz": 5 } },
+    { question: "Mondj egy dolgot, amihez szerencse kell!", answers: { "lottó": 45, "kártyajáték": 25, "kockadobás": 15, "vizsga": 10, "szerelem": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy üres szobában van!", answers: { "visszhang": 35, "por": 25, "pókháló": 15, "levegő": 12, "csend": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy bowlingpályán van!", answers: { "golyó": 40, "bábu": 30, "pálya": 15, "cipő": 10, "eredményjelző": 5 } },
+    { question: "Nevezz meg egy dolgot, amit egy postai csomagban küldesz!", answers: { "könyv": 35, "ruha": 30, "ajándék": 15, "játék": 12, "étel": 8 } },
+    { question: "Mondj egy dolgot, amit egy kertész használ!", answers: { "metszőolló": 35, "ásó": 25, "gereblye": 15, "locsolókanna": 13, "kapa": 12 } },
+    { question: "Nevezz meg egy dolgot, amit az emberek gyűjtenek!", answers: { "bélyeg": 40, "szalvéta": 25, "pénzérme": 15, "képeslap": 12, "hűtőmágnes": 8 } },
+    { question: "Mondj egy dolgot, amit egy bíró használ!", answers: { "kalapács": 50, "talár": 20, "törvénykönyv": 15, "paróka": 10, "szemüveg": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy liftben van!", answers: { "gomb": 45, "tükör": 25, "kijelző": 10, "zene": 8, "kapaszkodó": 7 } },
+    { question: "Mondj egy dolgot, ami egy gombócban lehet!", answers: { "szilva": 40, "túró": 25, "baracklekvár": 15, "hús": 12, "máj": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy palacsintatésztában van!", answers: { "liszt": 40, "tojás": 25, "tej": 20, "cukor": 10, "szóda": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy számítógép belsejében van!", answers: { "processzor": 35, "memória": 30, "merevlemez": 15, "ventilátor": 12, "alaplap": 8 } },
+    { question: "Mondj egy dolgot, amit egy bűvész mond!", answers: { "abrakadabra": 40, "hókuszpókusz": 25, "csiribú-csiribá": 15, "kérem a következő önkéntest": 12, "nézzék a kezemet": 8 } },
+    { question: "Mondj egy dolgot, amitől valaki libabőrös lesz!", answers: { "hideg": 45, "félelem": 25, "jó zene": 15, "meghatódás": 10, "ha valaki a hátamon rajzol": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy teherautó platóján lehet!", answers: { "sóder": 35, "bútor": 25, "építési törmelék": 15, "fa": 12, "árú": 8 } },
+    { question: "Nevezz meg egy helyet, ahol csendben kell lenni!", answers: { "könyvtár": 45, "templom": 25, "temető": 15, "színház": 10, "vizsga": 5 } },
+    { question: "Nevezz meg egy dolgot, aminek szarva van!", answers: { "szarvas": 40, "tehén": 25, "kecske": 15, "ördög": 12, "bika": 8 } },
+    { question: "Mondj egy dolgot, amit egy légiutas-kísérő mond!", answers: { "kapcsolják be a biztonsági öveket": 45, "kávét, teát, üdítőt?": 25, "köszönjük, hogy velünk utazott": 10, "mutassa be a vészkijáratokat": 8, "helyezzék függőleges állásba az üléstámlát": 7 } },
+    { question: "Nevezz meg egy dolgot, amit egy állatorvos csinál!", answers: { "beolt": 40, "megvizsgál": 25, "gyógyszert ad": 15, "műt": 12, "chipet ültet be": 8 } },
+    { question: "Nevezz meg egy dolgot, amit egy zsebkendőbe teszel!", answers: { "az orrod": 40, "a kezed": 25, "pénz": 15, "rágó": 12, "könnyek": 8 } },
+    { question: "Mondj egy dolgot, amit a kenyérre kensz!", answers: { "vaj": 40, "lekvár": 20, "májkrém": 15, "méz": 13, "sajtkrém": 12 } },
+    { question: "Nevezz meg egy dolgot, ami egy kastélyban ijesztő lehet!", answers: { "kísértet": 45, "pókháló": 20, "nyikorgó padló": 15, "sötét folyosó": 12, "páncél": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy hangszer tokjában van!", answers: { "hangszer": 50, "kottatartó": 15, "gyanta (hegedű)": 10, "tisztítókendő": 8, "pengető (gitár)": 7 } },
+    { question: "Mondj egy dolgot, ami egy méhkaptárban van!", answers: { "méh": 45, "méz": 30, "méhkirálynő": 10, "lép": 8, "viasz": 7 } },
+    { question: "Mondj egy dolgot, ami egy bírósági tárgyalóteremben van!", answers: { "bíró": 35, "vádlottak padja": 25, "ügyvéd": 15, "esküdtszék": 12, "tanúk padja": 8 } },
+    { question: "Nevezz meg egy dolgot, amit egy régész találhat!", answers: { "csontváz": 35, "cserépedény": 30, "régi pénzérme": 15, "fosszília": 12, "eszköz": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy junk-fiókban (mindenes fiókban) van!", answers: { "elem": 35, "gomb": 25, "régi kulcs": 15, "gémkapocs": 12, "ismeretlen csavar": 8 } },
+    { question: "Mondj egy dolgot, amit egy művész használ!", answers: { "ecset": 40, "festék": 30, "vászon": 15, "festőállvány": 10, "ceruza": 5 } },
+    { question: "Nevezz meg egy dolgot, ami lebeg a vízen!", answers: { "fadarab": 35, "gumilabda": 25, "levél": 20, "mentőöv": 15, "hajó": 5 } },
+    { question: "Mondj egy dolgot, amit egy salátában találsz a salátalevélen kívül!", answers: { "paradicsom": 40, "uborka": 25, "sajt": 15, "öntet": 12, "hagyma": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy kamrában van!", answers: { "lekvár": 40, "befőtt": 30, "liszt": 15, "krumpli": 10, "hagyma": 5 } },
+    { question: "Mondj egy dolgot, ami egy viharban történik!", answers: { "villámlás": 40, "dörgés": 30, "nagy szél": 15, "jégeső": 10, "áramszünet": 5 } },
+    { question: "Nevezz meg egy dolgot, amit egy síelő visel a ruháján kívül!", answers: { "síszemüveg": 35, "sisak": 30, "síléc": 15, "síbot": 12, "kesztyű": 8 } },
+    { question: "Mondj egy dolgot, amit egy kulcskarikán tartasz!", answers: { "lakáskulcs": 45, "kocsikulcs": 25, "kulcstartó figura": 15, "sörnyitó": 10, "bevásárlókocsi érme": 5 } },
+    { question: "Nevezz meg egy dolgot, amit egy palackban tárolsz!", answers: { "víz": 40, "üdítő": 25, "bor": 15, "ecet": 12, "olaj": 8 } },
+    { question: "Nevezz meg egy dolgot, amit egy királynő visel!", answers: { "korona": 50, "palást": 20, "ékszer": 15, "jogar": 10, "kesztyű": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy golfpályán van!", answers: { "lyuk": 40, "zászló": 25, "fű": 15, "homokcsapda": 12, "golfkocsi": 8 } },
+    { question: "Mondj egy dolgot, amit egy asztalos csinál!", answers: { "fűrészel": 35, "gyalul": 25, "csiszol": 20, "mér": 15, "szögel": 5 } },
+    { question: "Nevezz meg egy dolgot, amit egy zsonglőr dobál!", answers: { "labda": 45, "buzogány": 25, "karika": 15, "kés": 10, "égő fáklya": 5 } },
+    { question: "Mondj egy dolgot, amit egy testőr csinál!", answers: { "véd": 40, "figyel": 25, "kísér": 15, "körbenéz": 12, "fülhallgatóban beszél": 8 } },
+    { question: "Nevezz meg egy hangot, ami felébreszthet éjjel!", answers: { "ébresztőóra": 35, "dörrenés": 25, "kutya ugatás": 15, "sír a baba": 12, "horkolás": 8 } },
+    { question: "Mondj egy dolgot, amit egy eljegyzési gyűrűn látsz!", answers: { "gyémánt": 45, "kő": 25, "arany": 15, "gravírozás": 10, "foglalat": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy metróállomáson van!", answers: { "mozgólépcső": 40, "metrószerelvény": 25, "sín": 15, "hirdetés": 12, "pad": 8 } },
+    { question: "Mondj egy dolgot, amitől ragad a kezed!", answers: { "méz": 40, "ragasztó": 25, "lekvár": 15, "cukorka": 12, "festék": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy gida lábán van!", answers: { "patkó": 45, "szőr": 25, "pata": 15, "sár": 10, "seb": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy békatalpon van!", answers: { "hártya": 40, "ujj": 25, "bőr": 15, "sima felület": 12, "nedvesség": 8 } },
+    { question: "Nevezz meg egy dolgot, amit egy manikűrös használ!", answers: { "körömlakk": 40, "körömreszelő": 30, "olló": 15, "lakklemosó": 10, "vatta": 5 } },
+    { question: "Mondj egy dolgot, amit egy nyomozó keres egy bűntett helyszínén!", answers: { "ujjlenyomat": 45, "lábnyom": 20, "fegyver": 15, "hajszál": 12, "vérnyom": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy gyárban van!", answers: { "gép": 40, "munkás": 25, "futószalag": 15, "zaj": 12, "termék": 8 } },
+    { question: "Mondj egy dolgot, amit egy légtornász csinál!", answers: { "lóg": 35, "pörög": 25, "szaltózik": 20, "kapaszkodik": 15, "egyensúlyoz": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy vízimalomban van!", answers: { "vízikerék": 45, "víz": 20, "malomkő": 15, "liszt": 12, "zsák": 8 } },
+    { question: "Mondj egy dolgot, amit egy kincsvadász keres!", answers: { "kincsesláda": 45, "arany": 25, "térkép": 15, "ékszer": 10, "ás": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy űrállomáson van!", answers: { "űrhajós": 40, "lebegés": 20, "számítógép": 15, "ablak a Földre": 13, "szkafander": 12 } },
+    { question: "Nevezz meg egy dolgot, amit egy elhagyatott házban találsz!", answers: { "pókháló": 40, "por": 25, "törött ablak": 15, "nyikorgó padló": 12, "régi bútor": 8 } },
+    { question: "Mondj egy dolgot, amit egy esküvői tanú csinál!", answers: { "aláír": 45, "gyűrűt ad": 25, "beszédet mond": 15, "segít": 10, "tanúsít": 5 } },
+    { question: "Nevezz meg egy dolgot, amit egy síugró csinál!", answers: { "ugrik": 45, "repül": 25, "lecsúszik": 15, "talajra érkezik": 10, "egyensúlyoz": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy laboratóriumban van!", answers: { "kémcső": 40, "mikroszkóp": 25, "vegyszer": 15, "fehér köpeny": 12, "védőszemüveg": 8 } },
+    { question: "Mondj egy okot, amiért valaki didereg!", answers: { "fázik": 50, "fél": 25, "lázas": 15, "ideges": 8, "vizes lett": 2 } },
+    { question: "Nevezz meg egy dolgot, amit egy pilóta csinál!", answers: { "repülőt vezet": 45, "felszáll": 20, "leszáll": 15, "beszél a toronnyal": 12, "bejelenti az utazási információkat": 8 } },
+    { question: "Mit teszel egy kenyérpirítóba?", answers: { "kenyérszelet": 60, "kalács": 15, "zsemle": 10, "gofri": 8, "bagel": 7 } },
+    { question: "Nevezz meg egy dolgot, ami egy papírsárkányon van!", answers: { "madzag": 40, "farok": 30, "váz": 15, "papír": 10, "minta": 5 } },
+    { question: "Mondj egy dolgot, amit a tavasz beköszöntével látsz!", answers: { "hóvirág": 40, "rügyező fák": 25, "madárcsicsergés": 15, "hosszabb nappalok": 12, "olvad a hó": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy tevén van!", answers: { "púp": 60, "szőr": 15, "hosszú szempilla": 10, "nyereg": 8, "paták": 7 } },
+    { question: "Nevezz meg egy dolgot, ami egy kalóztérképen van!", answers: { "X (a kincs helye)": 50, "sziget": 20, "hajó": 10, "koponya": 8, "iránytű": 7 } },
+    { question: "Mit használsz esőben az esernyőn kívül?", answers: { "esőkabát": 45, "gumicsizma": 30, "kapucni": 15, "autó": 8, "semmit/megázok": 2 } },
+    { question: "Nevezz meg egy dolgot, ami egy hegedűn van!", answers: { "húr": 45, "vonó": 25, "kulcsok": 15, "csiga": 10, "f-lyuk": 5 } },
+    { question: "Mit csinál egy bíró egy sportmeccsen?", answers: { "sípol": 40, "szabálytalanságot jelez": 25, "sárga/piros lapot ad": 15, "időt mér": 12, "döntést hoz": 8 } },
+    { question: "Nevezz meg egy dolgot, amit egy könyvtáros csinál!", answers: { "könyvet ad ki/vesz vissza": 45, "csendre int": 20, "segít keresni": 15, "polcra rakja a könyveket": 12, "pecsétel": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy zsebórán van!", answers: { "lánc": 40, "mutató": 25, "fedél": 15, "számok": 12, "felhúzó": 8 } },
+    { question: "Mondj egy dolgot, ami egy gyertyán van!", answers: { "kanóc": 50, "láng": 25, "viasz": 15, "melegség": 8, "fény": 2 } },
+    { question: "Nevezz meg egy dolgot, amit egy bűvész a cilinderéből húz elő!", answers: { "nyúl": 50, "galamb": 20, "kendő": 15, "virágcsokor": 10, "kártya": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy jégkockatartóban van!", answers: { "víz": 40, "jégkocka": 35, "fagyasztott gyümölcs": 10, "kávé": 8, "püré": 7 } },
+    { question: "Nevezz meg egy dolgot, ami egy távirányítón van!", answers: { "gomb": 50, "számok": 20, "elem": 15, "ki/be kapcsoló": 10, "hangerőszabályzó": 5 } },
+    { question: "Mondj egy dolgot, ami egy várárokban lehet!", answers: { "víz": 45, "krokodil": 20, "felvonóhíd": 15, "sár": 12, "hal": 8 } },
+    { question: "Nevezz meg egy dolgot, ami egy űrhajón van!", answers: { "hajtómű": 35, "űrhajós": 25, "vezérlőpult": 20, "ablak": 15, "napelem": 5 } },
+    { question: "Nevezz meg egy dolgot, amit egy tündér csinál!", answers: { "varázsol": 45, "repül": 25, "kívánságot teljesít": 15, "segít": 10, "csillámport szór": 5 } },
+    { question: "Mondj egy dolgot, amit a szüleidtől tanultál!", answers: { "járni": 35, "beszélni": 25, "biciklizni": 15, "il Szabályokat": 12, "enni": 8 } },
+    { question: "Nevezz meg egy dolgot, amit a fogorvosi székben csinálsz!", answers: { "tátod a szád": 50, "ülsz": 20, "szorítod a karfát": 10, "hallgatod a fúrót": 8, "öblögetsz": 7 } },
+    { question: "Nevezz meg egy dolgot, ami egy mikroszkóp alatt lehet!", answers: { "baktérium": 40, "sejt": 30, "porszem": 10, "hajszál": 8, "vízcsepp": 7 } },
+    { question: "Nevezz meg egy dolgot, ami egy bábjátékban van!", answers: { "báb": 50, "paraván": 20, "bábjátékos": 10, "hang": 8, "történet": 7 } },
+    { question: "Mondj egy dolgot, amit egy favágó használ!", answers: { "láncfűrész": 45, "fejsze": 35, "sisak": 10, "védőszemüveg": 5, "bakancs": 5 } },
+    { question: "Nevezz meg egy dolgot, ami egy szökőkútban van!", answers: { "víz": 50, "pénzérme": 25, "szobor": 10, "galamb": 8, "alga": 7 } },
+    { question: "Nevezz meg egy dolgot, amit egy artista csinál a cirkuszban!", answers: { "egyensúlyoz": 35, "szaltózik": 25, "zsonglőrködik": 20, "lóg a trapézon": 15, "hajlong": 5 } },
+    { question: "Mondj egy dolgot, amit egy légkalapács csinál!", answers: { "zajt": 40, "feltöri az aszfaltot": 35, "port": 10, "rezeg": 8, "lyukat készít": 7 } },
+    { question: "Nevezz meg egy dolgot, ami egy szemetesautóban van!", answers: { "szemét": 40, "szemeteszsák": 25, "szag": 15, "prés": 12, "kukás": 8 } },
+    { question: "Mondj egy okot, amiért valaki elájul!", answers: { "vér látványa": 40, "nagy fájdalom": 25, "ijedtség": 15, "nagy meleg": 12, "levegőhiány": 8 } },
+            { question: "Mondj egy dolgot, amit egy iskolatáskában találsz!", answers: { "Könyv": 40, "Füzet": 30, "Toll": 15, "Tolltartó": 8, "Vonalzó": 5, "Radír": 2 } },
+            { question: "Nevezz meg egy népszerű pizzafeltétet!", answers: { "Sonka": 35, "Gomba": 25, "Szalámi": 20, "Kukorica": 12, "Sajt": 6, "Ananász": 2 } },
+            { question: "Mondj egy dolgot, amit nyaraláskor csinálsz!", answers: { "Fürdés": 33, "Napozás": 28, "Városnézés": 18, "Pihenés": 11, "Evés": 7, "Olvasás": 3 } },
+            { question: "Nevezz meg egy időjárási jelenséget!", answers: { "Eső": 42, "Napsütés": 25, "Hó": 15, "Szél": 10, "Villámlás": 6, "Köd": 2 } },
+            { question: "Mondj egy dolgot, ami hideg!", answers: { "Jég": 45, "Hó": 28, "Víz": 12, "Fagylalt": 9, "Fém": 4, "Tél": 2 } },
+            { question: "Nevezz meg egy gyümölcsöt!", answers: { "Alma": 38, "Banán": 29, "Narancs": 16, "Szőlő": 9, "Eper": 5, "Körte": 3 } },
+            { question: "Mondj egy tárgyat a konyhából!", answers: { "Tányér": 30, "Pohár": 25, "Villa": 20, "Kés": 13, "Lábas": 8, "Kanál": 4 } },
+            { question: "Nevezz meg egy foglalkozást, amihez egyenruha kell!", answers: { "Rendőr": 41, "Tűzoltó": 27, "Katona": 14, "Orvos": 9, "Pincér": 6, "Postás": 3 } },
+            { question: "Mondj egy dolgot, amit egy cirkuszban láthatsz!", answers: { "Bohóc": 36, "Oroszlán": 26, "Elefánt": 17, "Akrobata": 11, "Zsonglőr": 7, "Sátor": 3 } },
+            { question: "Mondj egy okot, amiért telefonálsz!", answers: { "Üdvözlés": 32, "Információkérés": 28, "Segélyhívás": 19, "Időpont egyeztetés": 11, "Rendelés": 6, "Pletyka": 4 } },
+        ];
+
+        const grandPrizeQuizData = [
+            { question: "Melyik bolygó a Naprendszerünk legnagyobbja?", options: ["Föld", "Mars", "Jupiter", "Szaturnusz"], correctAnswer: 2 },
+            { question: "Ki írta a Hamlet című drámát?", options: ["Charles Dickens", "William Shakespeare", "Lev Tolsztoj", "Molière"], correctAnswer: 1 },
+            { question: "Mi Magyarország fővárosa?", options: ["Debrecen", "Szeged", "Pécs", "Budapest"], correctAnswer: 3 },
+            { question: "Hány lába van egy póknak?", options: ["6", "8", "10", "12"], correctAnswer: 1 },
+            { question: "Melyik a világ legmagasabb hegycsúcsa?", options: ["K2", "Mount Everest", "Kangchenjunga", "Lhotse"], correctAnswer: 1 },
+            { question: "Melyik évben kezdődött a második világháború?", options: ["1914", "1939", "1941", "1945"], correctAnswer: 1 },
+            { question: "Mi a víz kémiai képlete?", options: ["CO2", "O2", "H2O", "NaCl"], correctAnswer: 2 },
+            { question: "Ki festette a Mona Lisát?", options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet"], correctAnswer: 2 },
+            { question: "Melyik a legnagyobb óceán a Földön?", options: ["Atlanti-óceán", "Indiai-óceán", "Jeges-tenger", "Csendes-óceán"], correctAnswer: 3 },
+            { question: "Melyik országban található a gízai nagy piramis?", options: ["Görögország", "Mexikó", "Egyiptom", "India"], correctAnswer: 2 },
+            { question: "Melyik állat a dzsungel királya?", options: ["Tigris", "Oroszlán", "Medve", "Elefánt"], correctAnswer: 1 },
     { question: "Hány nap van egy héten?", options: ["5", "6", "7", "8"], correctAnswer: 2 },
     { question: "Mi Magyarország fővárosa?", options: ["Debrecen", "Szeged", "Pécs", "Budapest"], correctAnswer: 3 },
     { question: "Melyik a legnagyobb óceán?", options: ["Atlanti-óceán", "Indiai-óceán", "Csendes-óceán", "Jeges-tenger"], correctAnswer: 2 },
@@ -623,418 +1068,6 @@
             { question: "Melyik országban található a Nagy Fal?", options: ["Japán", "India", "Mongólia", "Kína"], correctAnswer: 3 },
         ];
 
-        const mainGameData = [ 
-        { question: "Nevezz meg egy dolgot, ami egy kanapé alatt lehet!", answers: { "por": 45, "pénz": 25, "játék": 15, "távirányító": 10, "morzsa": 5 } },
-    { question: "Mondj egy okot, amiért felhívsz valakit telefonon!", answers: { "megkérdezni hogy van": 40, "segítséget kérni": 25, "találkozót megbeszélni": 15, "szülinapot kívánni": 12, "pletykálni": 8 } },
-    { question: "Nevezz meg egy sajtfajtát!", answers: { "trappista": 50, "ementáli": 20, "cheddar": 15, "parmezán": 10, "camembert": 5 } },
-    { question: "Mondj egy dolgot, amit egy hot dogra teszel!", answers: { "mustár": 45, "ketchup": 30, "majonéz": 10, "pirított hagyma": 8, "uborka": 7 } },
-    { question: "Nevezz meg egy állatot, amelyik téli álmot alszik!", answers: { "medve": 60, "sün": 20, "borz": 10, "mormota": 7, "denevér": 3 } },
-    { question: "Mondj egy dolgot, amit egy pizsamapartin csinálnak!", answers: { "párnacsatáznak": 35, "filmet néznek": 30, "pletykálnak": 15, "esznek": 12, "sokáig fennmaradnak": 8 } },
-    { question: "Nevezz meg egy híres feltalálót!", answers: { "edison": 40, "einstein": 25, "bell": 15, "tesla": 12, "wright fivérek": 8 } },
-    { question: "Mondj egy dolgot, ami elolvad a napon!", answers: { "hó": 45, "jég": 30, "fagyi": 10, "csoki": 8, "vaj": 7 } },
-    { question: "Nevezz meg egy okot, amiért bocsánatot kérsz!", answers: { "megbántottam valakit": 40, "késtem": 25, "hibáztam": 15, "összetörtem valamit": 12, "hazudtam": 8 } },
-    { question: "Nevezz meg egy tésztaételt!", answers: { "bolognai": 40, "carbonara": 25, "milánói": 15, "túrós csusza": 12, "lasagne": 8 } },
-    { question: "Mondj egy dolgot, amit egy felvonuláson látsz!", answers: { "tömeg": 35, "zászló": 25, "zenekar": 20, "jelmezesek": 15, "transzparens": 5 } },
-    { question: "Nevezz meg egy okot, amiért suttogni kell!", answers: { "valaki alszik": 40, "titkot mondok": 30, "könyvtárban vagyok": 15, "templomban vagyok": 10, "bújócskázok": 5 } },
-    { question: "Nevezz meg egy helyet, ahol hosszú sort kell kiállni!", answers: { "posta": 35, "bolt pénztár": 30, "bank": 15, "orvosi rendelő": 12, "vidámpark": 8 } },
-    { question: "Nevezz meg egy cipőfajtát!", answers: { "sportcipő": 40, "csizma": 25, "papucs": 15, "magassarkú": 12, "szandál": 8 } },
-    { question: "Mondj egy híres épületet a világból!", answers: { "eiffel torony": 45, "pisai ferde torony": 20, "szabadság szobor": 15, "colosseum": 12, "gizai piramisok": 8 } },
-    { question: "Nevezz meg egy dolgot, amit egy mocsárban találsz!", answers: { "sár": 35, "nád": 25, "béka": 20, "szúnyog": 15, "vízililiom": 5 } },
-    { question: "Mondj egy okot, amiért vízvezetékszerelőt hívsz!", answers: { "csőtörés": 45, "dugulás": 25, "csöpög a csap": 15, "fűtést szerel": 10, "radiátor csere": 5 } },
-    { question: "Nevezz meg egy süteményfajtát!", answers: { "muffin": 30, "keksz": 25, "linzer": 20, "brownie": 15, "piskóta": 10 } },
-    { question: "Mondj egy szót, amit egy kalóz mond!", answers: { "arr": 50, "kincsem": 20, "a fene egye meg": 15, "kapitány": 10, "deszkára": 5 } },
-    { question: "Nevezz meg egy sapkafajtát!", answers: { "kötött sapka": 30, "baseball sapka": 25, "kalap": 20, "svájci sapka": 15, "szalmakalap": 10 } },
-    { question: "Mondj egy dolgot, ami egy DNS-ben van!", answers: { "információ": 40, "gén": 30, "örökítőanyag": 15, "kromoszóma": 10, "spirál": 5 } },
-    { question: "Mondj egy dolgot, ami egy eszpresszó kávéban van!", answers: { "kávé": 50, "víz": 30, "koffein": 10, "cukor": 7, "hab": 3 } },
-    { question: "Nevezz meg egy dolgot, ami egy szerszámos fészerben van!", answers: { "fűnyíró": 35, "ásó": 25, "gereblye": 20, "locsoló": 15, "talicska": 5 } },
-    { question: "Mondj egy dolgot, ami egy kastélykertben van!", answers: { "szökőkút": 35, "labirintus": 25, "pad": 20, "szobor": 15, "sövény": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy szélmalommal kapcsolatos!", answers: { "szél": 40, "lapát": 30, "liszt": 15, "hollandia": 10, "don quijote": 5 } },
-    { question: "Mondj egy dolgot, amit az utolsó pillanatra hagysz!", answers: { "tanulás": 40, "ajándékvásárlás": 25, "csomagolás": 15, "takarítás": 12, "adobevallás": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy sci-fi filmben van!", answers: { "űrhajó": 45, "lézerfegyver": 20, "robot": 15, "idegen": 12, "időutazás": 8 } },
-    { question: "Mondj egy dolgot, ami egy levelibéka bőrével kapcsolatos!", answers: { "zöld": 40, "sima": 25, "ragadós": 15, "nyálkás": 12, "nedves": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy bűvésztrükkhöz kell!", answers: { "kártya": 35, "kalap": 25, "kendő": 20, "galamb": 15, "asszisztens": 5 } },
-    { question: "Mondj egy dolgot, ami egy elhagyatott szigeten van!", answers: { "pálmafa": 40, "homok": 25, "kókuszdió": 15, "hajóroncs": 12, "magány": 8 } },
-    { question: "Nevezz meg egy dolgot, amit egy mikuláscsomagban találsz!", answers: { "csoki mikulás": 40, "szaloncukor": 25, "narancs": 15, "mogyoró": 12, "virgács": 8 } },
-    { question: "Mondj egy dolgot, amit egy léggömbbel csinálsz!", answers: { "felfújom": 45, "eldurrantom": 20, "elengedem": 15, "játszok vele": 12, "feldíszítem": 8 } },
-    { question: "Nevezz meg egy dolgot, amit a fogtündér hoz!", answers: { "pénz": 60, "ajándék": 15, "levél": 10, "fog": 8, "boldogság": 7 } },
-    { question: "Mondj egy dolgot, amit egy takaró alatt csinálsz!", answers: { "alszom": 45, "olvasok": 20, "filmet nézek": 15, "bújok": 12, "rettegek": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy hangszerboltban szól!", answers: { "gitár": 35, "zongora": 25, "dob": 20, "zene": 15, "próbálgatás": 5 } },
-    { question: "Mondj egy dolgot, amit egy pizzafutár hoz!", answers: { "pizza": 60, "üdítő": 15, "számla": 10, "saláta": 8, "desszert": 7 } },
-    { question: "Nevezz meg egy dolgot, ami egy tollaslabda meccsen van!", answers: { "ütő": 40, "labda": 30, "háló": 15, "játékos": 10, "pont": 5 } },
-    { question: "Mondj egy dolgot, amit egy trófeán látsz!", answers: { "gravírozás": 40, "serleg": 25, "figura": 15, "dátum": 12, "név": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy western filmben van!", answers: { "cowboy": 45, "pisztolypárbaj": 20, "ló": 15, "indián": 12, "kocsma": 8 } },
-    { question: "Mondj egy dolgot, amit egy zöldséglébe teszel!", answers: { "répa": 40, "cékla": 25, "alma": 15, "zeller": 12, "spenót": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy trópusi szigeten él!", answers: { "majom": 35, "papagáj": 30, "kígyó": 15, "pók": 12, "lepke": 8 } },
-    { question: "Mondj egy dolgot, ami egy vetélkedőben van!", answers: { "kérdés": 40, "műsorvezető": 25, "nyeremény": 15, "játékos": 12, "válasz": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy úszómedencében van!", answers: { "víz": 55, "klór": 20, "létra": 10, "csempe": 8, "úszó ember": 7 } },
-    { question: "Mondj egy dolgot, amit egy szuperhős visel!", answers: { "köpeny": 45, "álarc": 25, "jelmez": 15, "csizma": 10, "embléma": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy sírkövön áll!", answers: { "név": 45, "dátum": 30, "idézet": 10, "kereszt": 8, "virág": 7 } },
-    { question: "Mondj egy dolgot, amit egy szerelő javít!", answers: { "autó": 50, "mosógép": 20, "csap": 15, "tv": 10, "fűtés": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy romantikus vacsorán van!", answers: { "gyertya": 45, "bor": 25, "virág": 15, "zene": 10, "finom étel": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy rendőrautóban van!", answers: { "rendőr": 40, "rádió": 25, "bilincs": 15, "sziréna": 12, "fegyver": 8 } },
-    { question: "Mondj egy dolgot, ami egy rock koncerten van!", answers: { "gitár": 35, "dob": 25, "énekes": 20, "tömeg": 15, "hangos zene": 5 } },
-    { question: "Mondj egy dolgot, ami egy puzzle dobozán van!", answers: { "kép": 50, "darabszám": 25, "márkanév": 10, "korhatár": 8, "vonalkód": 7 } },
-    { question: "Nevezz meg egy dolgot, ami egy pikniken van!", answers: { "pokróc": 40, "szendvics": 30, "kosár": 15, "hangya": 10, "üdítő": 5 } },
-    { question: "Mondj egy dolgot, amit egy órás javít!", answers: { "óra": 60, "elem": 15, "szíj": 10, "mutató": 8, "szerkezet": 7 } },
-    { question: "Nevezz meg egy dolgot, ami egy orvosi rendelő várójában van!", answers: { "beteg": 40, "szék": 25, "újság": 15, "recepciós": 12, "csend": 8 } },
-    { question: "Mondj egy dolgot, ami egy óceán mélyén van!", answers: { "hal": 35, "hajóroncs": 25, "kincs": 20, "tengeralattjáró": 15, "sötétség": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy noteszben van!", answers: { "jegyzet": 40, "telefonszám": 25, "dátum": 15, "lista": 12, "rajz": 8 } },
-    { question: "Mondj egy dolgot, ami egy mezőn van!", answers: { "fű": 45, "virág": 25, "tücsök": 10, "szöcske": 8, "traktor": 7 } },
-    { question: "Nevezz meg egy dolgot, ami egy mézeskalács házikón van!", answers: { "cukorka": 40, "mézeskalács": 25, "cukormáz": 15, "ablak": 12, "ajtó": 8 } },
-    { question: "Mondj egy dolgot, amit egy marslakó mondana!", answers: { "békével jöttünk": 35, "vigyetek a vezéretekhez": 25, "furcsa hangok": 20, "hello": 15, "nem értem": 5 } },
-    { question: "Mondj egy dolgot, ami egy luxusautóban van!", answers: { "bőrülés": 40, "gps": 20, "automata váltó": 15, "ülésfűtés": 13, "minibár": 12 } },
-    { question: "Mondj egy dolgot, ami egy logikai játékban van!", answers: { "feladvány": 40, "szabály": 25, "megoldás": 15, "gondolkodás": 12, "fejtörő": 8 } },
-    { question: "Mondj egy dolgot, ami egy kutyaálomban lehet!", answers: { "csont": 40, "kergetőzés": 25, "gazdi": 15, "macska": 12, "futás": 8 } },
-    { question: "Mondj egy dolgot, ami egy kozmetikusnál van!", answers: { "krém": 35, "maszk": 25, "kezelőágy": 20, "tükör": 15, "gőzölő": 5 } },
-    { question: "Nevezz meg egy dolgot, amit egy képregényben látsz!", answers: { "szuperhős": 40, "szövegbuborék": 30, "rajz": 15, "gonosztevő": 10, "hangutánzó szó": 5 } },
-    { question: "Mondj egy dolgot, ami egy kávéscsészében van!", answers: { "kávé": 60, "kanál": 15, "cukor": 10, "tej": 8, "zacc": 7 } },
-    { question: "Mondj egy dolgot, ami egy jégkorcsolyán van!", answers: { "penge": 50, "cipőfűző": 25, "cipő": 15, "nyelv": 7, "élvédő": 3 } },
-    { question: "Mondj egy dolgot, amit egy kamasz csinál!", answers: { "telefonozik": 40, "zenét hallgat": 25, "barátokkal lóg": 15, "visszabeszél": 12, "sokat alszik": 8 } },
-    { question: "Mondj egy dolgot, ami egy írógépen van!", answers: { "billentyű": 50, "papír": 20, "festékszalag": 15, "kar": 10, "csengő": 5 } },
-    { question: "Mondj egy dolgot, ami egy hőlégballonban van!", answers: { "kosár": 40, "láng": 25, "utas": 15, "pilóta": 12, "ballon": 8 } },
-    { question: "Nevezz meg egy dolgot, amit egy hamburgeresnél kapsz!", answers: { "hamburger": 45, "sült krumpli": 25, "kóla": 15, "szalvéta": 10, "tálca": 5 } },
-    { question: "Mondj egy dolgot, ami egy hajón történik!", answers: { "ringatózás": 35, "utazás": 25, "horgászat": 20, "napozás": 15, "hányinger": 5 } },
-    { question: "Mondj egy dolgot, ami egy fülben van!", answers: { "fülbevaló": 40, "fülzsír": 25, "hallókészülék": 15, "fülhallgató": 12, "vatta": 8 } },
-    { question: "Mondj egy dolgot, ami egy esküvői fogadáson van!", answers: { "torta": 40, "tánc": 25, "vacsora": 15, "zene": 12, "pezsgő": 8 } },
-    { question: "Nevezz meg egy dolgot, amit egy filmforgatáson látsz!", answers: { "kamera": 45, "rendező": 25, "színész": 15, "csapó": 10, "fények": 5 } },
-    { question: "Mondj egy dolgot, ami egy festményen van!", answers: { "táj": 35, "ember": 30, "szín": 15, "keret": 12, "ecsetvonás": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy ékszerbolti kirakatban van!", answers: { "gyűrű": 45, "nyaklánc": 25, "óra": 15, "karkötő": 10, "fülbevaló": 5 } },
-    { question: "Mondj egy dolgot, ami egy csokoládégyárban van!", answers: { "csoki": 50, "kakaó": 20, "cukor": 15, "gép": 10, "finom illat": 5 } },
-    { question: "Mondj egy dolgot, ami egy ceruza végén van!", answers: { "radír": 60, "hegy": 25, "grafit": 10, "fa": 3, "rágásnyom": 2 } },
-    { question: "Mondj egy dolgot, ami egy borospincében van!", answers: { "boroshordó": 45, "borosüveg": 25, "pókháló": 10, "hideg": 8, "doh": 7 } },
-    { question: "Mondj egy dolgot, ami egy buborékban van!", answers: { "levegő": 60, "víz": 15, "szappan": 10, "fény": 8, "tükörkép": 7 } },
-    { question: "Mondj egy dolgot, ami egy bohócruhán van!", answers: { "nagy gomb": 35, "pöttyös minta": 25, "csíkos minta": 20, "fodros gallér": 15, "folt": 5 } },
-    { question: "Mondj egy dolgot, ami egy barkácsboltban van!", answers: { "csavar": 40, "festék": 25, "fúrógép": 15, "szög": 12, "kalapács": 8 } },
-    { question: "Mondj egy dolgot, ami egy autópálya pihenőben van!", answers: { "benzinkút": 45, "wc": 25, "étterem": 15, "parkoló": 10, "kamion": 5 } },
-    { question: "Mondj egy dolgot, ami egy atlétika pályán van!", answers: { "futópálya": 45, "súlylökő golyó": 20, "magasugró léc": 15, "rajtkocka": 12, "homokozó": 8 } },
-    { question: "Mondj egy dolgot, ami egy anya táskájában van!", answers: { "pelenka": 35, "pénztárca": 25, "nedves törlőkendő": 20, "kulcs": 15, "telefon": 5 } },
-    { question: "Nevezz meg egy dolgot, amit egy állatkerti állat eszik!", answers: { "széna": 35, "hús": 25, "gyümölcs": 20, "hal": 15, "zöldség": 5 } },
-    { question: "Mondj egy dolgot, amit egy álarcosbálon viselsz!", answers: { "álarc": 60, "jelmez": 25, "paróka": 10, "kalap": 3, "kesztyű": 2 } },
-    { question: "Mondj egy dolgot, ami egy akupunktúrás kezelésen van!", answers: { "tű": 60, "páciens": 15, "kezelőágy": 10, "orvos": 8, "relaxáció": 7 } },
-    { question: "Mondj egy dolgot, amit egy ablakpárkányon tartasz!", answers: { "virág": 60, "kaktusz": 15, "dísztárgy": 10, "gyertya": 8, "könyv": 7 } },
-    { question: "Mondj egy dolgot, amit egy biciklin javítasz!", answers: { "lánc": 40, "gumi": 35, "fék": 10, "kerék": 8, "ülés": 7 } },
-    { question: "Mondj egy dolgot, ami egy ébresztőórán van!", answers: { "számok": 40, "mutató": 30, "gomb": 15, "kijelző": 10, "szundi gomb": 5 } },
-    { question: "Mondj egy dolgot, amit egy diétában elhagysz!", answers: { "cukor": 45, "kenyér": 25, "csoki": 15, "tészta": 10, "zsír": 5 } },
-    { question: "Mondj egy dolgot, amit egy detektívregényben olvasol!", answers: { "gyilkosság": 40, "nyomozó": 25, "nyom": 15, "rejtély": 12, "gyanúsított": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy edzőteremben van!", answers: { "súlyzó": 40, "futópad": 30, "tükör": 15, "edző": 10, "kulacs": 5 } },
-    { question: "Mondj egy dolgot, ami egy zokniban lehet a mosás után!", answers: { "semmi": 40, "lyuk": 30, "szösz": 15, "párja hiányzik": 10, "pénz": 5 } },
-    { question: "Mondj egy dolgot, amit egy ápolónő ad neked!", answers: { "injekció": 45, "gyógyszer": 30, "lázmérő": 10, "vérnyomásmérő": 8, "jó tanács": 7 } },
-    { question: "Nevezz meg egy dolgot, amit egy gyerek karácsonyra kér!", answers: { "játék": 40, "lego": 25, "kutya": 15, "bicikli": 12, "telefon": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy gőzmozdonyból jön ki!", answers: { "gőz": 55, "füst": 30, "szénpor": 8, "hang": 5, "szikra": 2 } },
-    { question: "Mondj egy dolgot, amitől valaki ásít!", answers: { "álmosság": 55, "unalom": 25, "fáradtság": 10, "ha más is ásít": 8, "levegőhiány": 2 } },
-    { question: "Mondj egy dolgot, ami egy madárfészekben van!", answers: { "tojás": 50, "fióka": 30, "ág": 10, "toll": 8, "sár": 2 } },
-    { question: "Mondj egy dolgot, amit egy testépítő csinál!", answers: { "súlyt emel": 55, "pózol": 20, "eszik": 10, "feszít": 8, "edz": 7 } },
-    { question: "Nevezz meg egy szuperhős képességet!", answers: { "repülés": 45, "szupererő": 30, "láthatatlanság": 10, "gyorsaság": 8, "pókháló lövés": 7 } },
-    { question: "Mondj egy dolgot, ami egy versenypálya mellett van!", answers: { "nézőtér": 45, "boxutca": 25, "kordon": 15, "hirdetőtábla": 10, "bíró": 5 } },
-    { question: "Mondj egy dolgot, amit egy utcaseprő használ!", answers: { "seprű": 50, "lapát": 30, "kuka": 10, "takarítókocsi": 8, "kesztyű": 2 } },
-    { question: "Mondj egy dolgot, ami egy üvegházban van!", answers: { "növény": 45, "paradicsom": 25, "meleg": 15, "pára": 10, "föld": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy videójátékban van!", answers: { "pálya": 35, "karakter": 30, "ellenség": 15, "pontszám": 12, "élet": 8 } },
-    { question: "Mondj egy dolgot, amit egy vándorcirkuszban látsz!", answers: { "sátor": 40, "lakókocsi": 25, "artista": 15, "bohóc": 12, "állat": 8 } },
-    { question: "Mondj egy dolgot, ami egy ügyvédnél van!", answers: { "aktatáska": 35, "törvénykönyv": 30, "öltöny": 15, "ügyfél": 12, "irat": 8 } },
-    { question: "Mondj egy dolgot, amit egy takarítónő csinál!", answers: { "porszívózik": 40, "felmos": 30, "port töröl": 15, "szemetet visz ki": 10, "ablakot pucol": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy tinédzser szobájában van!", answers: { "rendetlenség": 35, "poszter": 30, "számítógép": 15, "ágy": 12, "telefon": 8 } },
-    { question: "Mondj egy dolgot, amit egy turista vásárol!", answers: { "hűtőmágnes": 45, "képeslap": 25, "szuvenír": 15, "póló": 10, "térkép": 5 } },
-    { question: "Mondj egy dolgot, amit egy színész csinál a színpadon!", answers: { "szerepet játszik": 45, "szöveget mond": 25, "mozog": 15, "énekel": 10, "meghajol": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy szakácskönyvben van!", answers: { "recept": 55, "hozzávalók": 20, "kép": 10, "leírás": 8, "főzési idő": 7 } },
-    { question: "Mondj egy dolgot, ami egy személyi igazolványon van!", answers: { "fénykép": 45, "név": 25, "születési dátum": 15, "aláírás": 10, "lakcím": 5 } },
-    { question: "Mondj egy dolgot, ami egy síparadicsomban van!", answers: { "hóágyú": 35, "sífelvonó": 30, "hütte": 15, "síoktató": 12, "síkölcsönző": 8 } },
-    { question: "Mondj egy dolgot, ami egy rablónál van!", answers: { "maszk": 40, "zsák": 25, "fegyver": 15, "kesztyű": 12, " menekülő autó": 8 } },
-    { question: "Mondj egy dolgot, ami egy rádióstúdióban van!", answers: { "mikrofon": 50, "fejhallgató": 20, "keverőpult": 15, "műsorvezető": 10, "számítógép": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy piramis belsejében van!", answers: { "múmia": 45, "szarkofág": 25, "kincs": 10, "folyosó": 8, "csapda": 7 } },
-    { question: "Mondj egy dolgot, amit egy porszívó felszív!", answers: { "por": 50, "morzsa": 25, "hajszál": 10, "szösz": 8, "pénzérme": 7 } },
-    { question: "Mondj egy dolgot, ami egy rendőrségi kihallgatáson van!", answers: { "rendőr": 35, "gyanúsított": 30, "lámpa": 15, "jegyzőkönyv": 12, "tükör": 8 } },
-    { question: "Mondj egy dolgot, amit egy parfümboltban érzel!", answers: { "illat": 55, "parfüm": 25, "alkohol": 10, "virágillat": 8, "gyümölcsillat": 2 } },
-    { question: "Mondj egy dolgot, ami egy operettben van!", answers: { "ének": 40, "tánc": 25, "jelmez": 15, "zenekar": 12, "szerelmi szál": 8 } },
-    { question: "Mondj egy dolgot, ami egy optikusnál van!", answers: { "szemüveg": 45, "lencse": 25, "vizsgálótábla": 15, "szemüvegtok": 10, "optikus": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy motorháztető alatt van!", answers: { "motor": 55, "akkumulátor": 20, "olaj": 10, "kábelek": 8, "hűtővíz": 7 } },
-    { question: "Mondj egy dolgot, ami egy nemzeti parkban van!", answers: { "turistaút": 35, "fa": 25, "állat": 20, "kilátó": 15, "parkőr": 5 } },
-    { question: "Mondj egy dolgot, ami egy mobiltelefonon van!", answers: { "alkalmazás": 40, "kijelző": 25, "kamera": 15, "akkumulátor": 12, "gomb": 8 } },
-    { question: "Mondj egy dolgot, ami egy macskajáték!", answers: { "gombolyag": 35, "játékegér": 30, "lézer mutató": 15, "tollas pálca": 12, "csörgő labda": 8 } },
-    { question: "Mondj egy dolgot, ami egy maratonon van!", answers: { "futó": 40, "célvonal": 25, "frissítőpont": 15, "rajtszám": 12, "fáradtság": 8 } },
-    { question: "Mondj egy dolgot, ami egy lovardában van!", answers: { "ló": 50, "istálló": 20, "széna": 15, "nyereg": 10, "lovász": 5 } },
-    { question: "Mondj egy dolgot, ami egy lufiárusnál van!", answers: { "lufi": 55, "hélium palack": 20, "gyerek": 10, "zsineg": 8, "pénz": 7 } },
-    { question: "Mondj egy dolgot, ami egy korcsolyapályán van!", answers: { "jég": 50, "korcsolyázó": 25, "palánk": 10, "zene": 8, "forralt bor": 7 } },
-    { question: "Mondj egy dolgot, ami egy konyhakertben van!", answers: { "kapa": 35, "veteményes": 30, "gyom": 15, "locsolókanna": 12, "madárijesztő": 8 } },
-    { question: "Mondj egy dolgot, ami egy karácsonyi vásárban van!", answers: { "forralt bor": 40, "kürtőskalács": 30, "fények": 10, "tömeg": 8, "kézműves termék": 7 } },
-    { question: "Mondj egy dolgot, ami egy kórházi szobában van!", answers: { "ágy": 45, "infúzió": 25, "nővérhívó": 10, "beteg": 8, "látogató": 7 } },
-    { question: "Mondj egy dolgot, ami egy kávéfőzőben van!", answers: { "kávé": 50, "víz": 30, "zacc": 10, "szűrő": 8, "gőz": 2 } },
-    { question: "Mondj egy dolgot, amit egy kapitány irányít!", answers: { "hajó": 60, "repülőgép": 20, "csapat": 10, "tengeralattjáró": 8, "űrhajó": 2 } },
-    { question: "Mondj egy dolgot, ami egy jégbarlangban van!", answers: { "jég": 55, "jégcsap": 25, "hideg": 10, "sötétség": 8, "visszhang": 2 } },
-    { question: "Mondj egy dolgot, ami egy ingatlanirodában van!", answers: { "ingatlanügynök": 35, "hirdetés": 30, "számítógép": 15, "alaprajz": 12, "ügyfél": 8 } },
-    { question: "Mondj egy dolgot, ami egy homokozóban van!", answers: { "homok": 50, "vödör": 20, "lapát": 15, "gyerek": 10, "homoksüti": 5 } },
-    { question: "Mondj egy dolgot, ami egy halászhajón van!", answers: { "háló": 50, "halász": 20, "hal": 15, "csónakmotor": 10, "horgony": 5 } },
-    { question: "Mondj egy dolgot, ami egy horrorfilmben van!", answers: { "ijesztgetés": 35, "szörny": 30, "vér": 15, "sikoly": 12, "sötétség": 8 } },
-    { question: "Mondj egy dolgot, ami egy hangversenyteremben van!", answers: { "zenekar": 35, "karmester": 30, "közönség": 15, "szék": 12, "hegedű": 8 } },
-    { question: "Mondj egy dolgot, ami egy galériában van!", answers: { "festmény": 50, "szobor": 25, "látogató": 10, "teremőr": 8, "katalógus": 7 } },
-    { question: "Mondj egy dolgot, ami egy focipálya közepén van!", answers: { "középkör": 45, "labda": 30, "kezdőrúgás": 10, "bíró": 8, "fű": 7 } },
-    { question: "Mondj egy dolgot, ami egy fitnesz órán van!", answers: { "edző": 40, "zene": 25, "gyakorlat": 15, "izzadság": 12, "súlyzó": 8 } },
-    { question: "Mondj egy dolgot, ami egy esküvői meghívón van!", answers: { "dátum": 40, "nevek": 30, "helyszín": 15, "időpont": 10, "idézet": 5 } },
-    { question: "Mondj egy dolgot, ami egy fagylaltozóban van!", answers: { "fagylalt": 50, "tölcsér": 25, "pultos": 10, "kanál": 8, "öntet": 7 } },
-    { question: "Mondj egy dolgot, ami egy fán van!", answers: { "levél": 45, "ág": 25, "törzs": 10, "gyümölcs": 8, "madár": 7 } },
-    { question: "Mondj egy dolgot, ami egy ékszeren van!", answers: { "kő": 40, "csat": 25, "gravírozás": 15, "lánc": 12, "medál": 8 } },
-    { question: "Mondj egy dolgot, ami egy csomagban van!", answers: { "ajándék": 40, "számla": 25, "térkitöltő anyag": 15, "megrendelt termék": 12, "doboz": 8 } },
-    { question: "Mondj egy dolgot, ami egy dobfelszerelés része!", answers: { "pergődob": 35, "lábdob": 25, "cintányér": 20, "dobverő": 15, "tam": 5 } },
-    { question: "Mondj egy dolgot, ami egy csatornában van!", answers: { "víz": 40, "szennyvíz": 25, "patkány": 15, "szemét": 12, "csatornafedél": 8 } },
-    { question: "Mondj egy dolgot, ami egy csillagképen van!", answers: { "csillag": 60, "göncölszekér": 15, "orion": 10, "alakzat": 8, "égbolt": 7 } },
-    { question: "Mondj egy dolgot, ami egy buszmegállóban van!", answers: { "menetrend": 40, "pad": 25, "várakozó ember": 15, "busz": 12, "szemetes": 8 } },
-    { question: "Mondj egy dolgot, ami egy bárányon van!", answers: { "gyapjú": 60, "báránybőr": 15, "bégetés": 10, "láb": 8, "fej": 7 } },
-    { question: "Mondj egy dolgot, ami egy borítékban van!", answers: { "levél": 50, "számla": 20, "képeslap": 15, "pénz": 10, "meghívó": 5 } },
-    { question: "Mondj egy dolgot, ami egy bográcsban fő!", answers: { "gulyás": 45, "pörkölt": 25, "halászlé": 15, "lecsó": 10, "babgulyás": 5 } },
-    { question: "Mondj egy dolgot, ami egy biliárdasztalon van!", answers: { "golyó": 50, "dákó": 25, "lyuk": 10, "posztó": 8, "kréta": 7 } },
-    { question: "Mondj egy dolgot, ami egy bíróságon történik!", answers: { "tárgyalás": 45, "ítélethirdetés": 25, "eskü": 10, "tanúvallomás": 8, "vád": 7 } },
-    { question: "Mondj egy dolgot, ami egy autósiskolában van!", answers: { "oktató": 40, "tanulóautó": 25, "kresz tábla": 15, "tesztlap": 12, "tanterem": 8 } },
-    { question: "Mondj egy dolgot, ami egy babakocsiban van!", answers: { "baba": 55, "cumi": 15, "takaró": 10, "játék": 8, "pelenka": 7 } },
-    { question: "Mondj egy dolgot, ami egy ágy alatt van!", answers: { "porcica": 45, "papucs": 25, "szörny": 10, "doboz": 8, "zokni": 7 } },
-    { question: "Mondj egy dolgot, amit egy állásinterjún kérdeznek!", answers: { "miért szeretne itt dolgozni": 40, "mik az erősségei": 25, "hol látja magát 5 év múlva": 15, "mennyi a fizetési igénye": 12, "tud csapatban dolgozni": 8 } },
-    { question: "Mondj egy dolgot, ami egy áruház hangosbemondóján szól!", answers: { "akció": 45, "reklám": 25, "elveszett gyerek": 10, "zene": 8, "zárási információ": 7 } },
-    { question: "Mondj egy dolgot, ami egy aluljáróban van!", answers: { "hajléktalan": 35, "zenész": 25, "graffiti": 15, "lépcső": 12, "bolt": 8 } },
-    { question: "Mondj egy dolgot, ami egy arcmaszk mögött van!", answers: { "arc": 45, "száj": 25, "orr": 15, "mosoly": 10, "bajusz": 5 } },
-    { question: "Mondj egy dolgot, ami egy akciófilmben történik!", answers: { "robbbanás": 45, "autósüldözés": 25, "lövöldözés": 15, "verekedés": 10, "túszdráma": 5 } },
-    { question: "Nevezz meg egy dolgot, amit a születésnapodon kapsz!", answers: { "ajándék": 45, "torta": 30, "puszi": 10, "köszöntés": 8, "virág": 7 } },
-    { question: "Nevezz meg egy dolgot, ami a kávéba való!", answers: { "cukor": 45, "tej": 30, "tejszín": 10, "méz": 8, "koffein": 7 } },
-    { question: "Mondj egy dolgot, amit egy kutya kerget!", answers: { "macska": 50, "labda": 25, "postás": 10, "farkát": 8, "biciklis": 7 } },
-    { question: "Nevezz meg egy dolgot, ami egy strandon zavaró!", answers: { "hangos zene": 35, "homok a törölközőn": 25, "tömeg": 15, "darazsak": 12, "leégés": 8 } },
-    { question: "Mondj egy dolgot, amit a téli ünnepek alatt eszel!", answers: { "bejgli": 45, "töltött káposzta": 25, "halászlé": 15, "mézeskalács": 10, "szaloncukor": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy telefonbeszélgetés végén elhangzik!", answers: { "szia": 50, "viszlát": 20, "puszi": 15, "majd hívlak": 10, "vigyázz magadra": 5 } },
-    { question: "Mondj egy dolgot, amit egy orvos javasol!", answers: { "pihenés": 40, "sok folyadék": 25, "gyógyszer szedése": 15, "diéta": 12, "mozgás": 8 } },
-    { question: "Nevezz meg egy dolgot, amit egy színházi öltözőben találsz!", answers: { "jelmez": 40, "smink": 25, "paróka": 15, "tükör": 12, "színész": 8 } },
-    { question: "Mondj egy dolgot, amit egy esküvőn isznak!", answers: { "pezsgő": 45, "bor": 25, "pálinka": 15, "üdítő": 10, "víz": 5 } },
-    { question: "Nevezz meg egy dolgot, amitől valaki allergiás lehet!", answers: { "parlagfű": 45, "por": 20, "mogyoró": 15, "macskaszőr": 12, "eper": 8 } },
-    { question: "Mondj egy dolgot, ami egy állatkertben tilos!", answers: { "állatokat etetni": 55, "átnyúlni a kerítésen": 25, "szemetelni": 10, "kiabálni": 7, "dohányozni": 3 } },
-    { question: "Mondj egy dolgot, ami egy lufiban van!", answers: { "levegő": 50, "hélium": 35, "víz": 8, "konfetti": 5, "semmi": 2 } },
-    { question: "Nevezz meg egy dolgot, ami egy strandon történik!", answers: { "napozás": 40, "úszás": 30, "várépítés": 15, "lángos evés": 10, "labdázás": 5 } },
-    { question: "Mondj egy dolgot, ami egy táncos csinál!", answers: { "táncol": 50, "forog": 20, "ugrik": 15, "hajol": 10, "mosolyog": 5 } },
-    { question: "Mondj egy dolgot, amit egy horgásztavon van!", answers: { "horgász": 45, "hal": 30, "stég": 10, "csónak": 8, "nádas": 7 } },
-    { question: "Mondj egy dolgot, ami egy szerszámos övön lóg!", answers: { "kalapács": 45, "csavarhúzó": 25, "mérőszalag": 15, "fogó": 10, "csavarok": 5 } },
-    { question: "Mondj egy dolgot, ami egy eljegyzéskor történik!", answers: { "lánykérés": 50, "gyűrű felhúzása": 30, "igen": 10, "térdre ereszkedés": 8, "pezsgőbontás": 2 } },
-    { question: "Mondj egy dolgot, amit egy szuperhős képessége!", answers: { "repülés": 45, "szupererő": 30, "láthatatlanság": 10, "gyorsaság": 8, "pókháló lövés": 7 } },
-    { question: "Nevezz meg egy dolgot, ami egy iskolatáskában van!", answers: { "könyv": 40, "füzet": 30, "tolltartó": 15, "tízórai": 10, "vonalzó": 5 } },
-    { question: "Mondj egy házimunkát, amit senki sem szeret csinálni!", answers: { "mosogatás": 35, "wc pucolás": 30, "vasalás": 20, "porszívózás": 10, "szemetet levinni": 5 } },
-    { question: "Nevezz meg egy időjárási jelenséget!", answers: { "eső": 40, "napsütés": 25, "szél": 15, "hó": 12, "villámlás": 8 } },
-    { question: "Mondj egy dolgot, amit egy hűtőben találsz!", answers: { "tej": 40, "tojás": 25, "sajt": 15, "felvágott": 12, "joghurt": 8 } },
-    { question: "Nevezz meg egy híres mesehőst!", answers: { "Piroska": 35, "Hófehérke": 30, "Hamupipőke": 20, "Jancsi és Juliska": 10, "a legkisebb fiú": 5 } },
-    { question: "Mit csinálsz Húsvétkor?", answers: { "tojást festek": 40, "locsolkodok": 30, "sonkát eszek": 15, "rokonokat látogatok": 10, "pihenek": 5 } },
-    { question: "Nevezz meg egy páros testrészt!", answers: { "szem": 45, "kéz": 25, "fül": 15, "láb": 10, "vese": 5 } },
-    { question: "Mondj egy állatot, amit egy farmon tartanak!", answers: { "tehén": 35, "tyúk": 30, "disznó": 20, "ló": 10, "birka": 5 } },
-    { question: "Nevezz meg egy alapvető érzelmet!", answers: { "öröm": 40, "szomorúság": 25, "harag": 20, "félelem": 10, "meglepődés": 5 } },
-    { question: "Nevezz meg egy ruhadarabot, amit nyáron viselsz!", answers: { "póló": 40, "rövidnadrág": 30, "fürdőruha": 15, "szandál": 10, "ruha": 5 } },
-    { question: "Nevezz meg egy tömegközlekedési eszközt!", answers: { "busz": 50, "villamos": 20, "metró": 15, "vonat": 10, "trolibusz": 5 } },
-    { question: "Mondj egy hobbit, amit egyedül is lehet csinálni!", answers: { "olvasás": 40, "rejtvényfejtés": 20, "kertészkedés": 15, "bélyeggyűjtés": 13, "horgászat": 12 } },
-    { question: "Nevezz meg egy dolgot, ami egy fürdőszobában van!", answers: { "fogkefe": 40, "szappan": 25, "törölköző": 15, "wc papír": 12, "kád": 8 } },
-    { question: "Mondj egy állathangot!", answers: { "vau": 40, "miau": 30, "mú": 15, "röf": 10, "csip-csip": 5 } },
-    { question: "Nevezz meg egy foglalkozást, ahol egyenruhát viselnek!", answers: { "rendőr": 45, "tűzoltó": 25, "katona": 15, "orvos": 10, "postás": 5 } },
-    { question: "Nevezz meg egy dolgot, amit egy erdőben találsz!", answers: { "fa": 50, "gomba": 20, "toboz": 15, "őz": 10, "erdei ösvény": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy konyhafiókban van!", answers: { "evőeszköz": 40, "kés": 25, "villa": 15, "kanál": 12, "fakanál": 8 } },
-    { question: "Mit reggelizel leggyakrabban?", answers: { "szendvics": 35, "müzli": 25, "tojás": 20, "péksütemény": 15, "virsli": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy pénztárcában van!", answers: { "pénz": 40, "bankkártya": 30, "személyi igazolvány": 15, "fénykép": 10, "bérlet": 5 } },
-    { question: "Mit csinálsz közvetlenül lefekvés előtt?", answers: { "fogat mosok": 45, "olvasok": 20, "tévét nézek": 15, "pizsamát veszek": 12, "iszok egy pohár vizet": 8 } },
-    { question: "Nevezz meg egy piros gyümölcsöt!", answers: { "eper": 40, "alma": 25, "cseresznye": 15, "málna": 12, "ribizli": 8 } },
-    { question: "Nevezz meg egy zöldséget, amiből levest lehet főzni!", answers: { "répa": 35, "krumpli": 25, "borsó": 20, "brokkoli": 15, "karfiol": 5 } },
-    { question: "Nevezz meg egy népszerű társasjátékot!", answers: { "monopoly": 40, "gazdálkodj okosan": 25, "activity": 15, "ki nevet a végén?": 12, "scrabble": 8 } },
-    { question: "Mondj egy okot, amiért valaki nevet!", answers: { "viccet hallott": 40, "csiklandozzák": 25, "boldog": 15, "vicces filmet néz": 12, "örül valaminek": 8 } },
-    { question: "Nevezz meg egy dolgot, ami ragadós!", answers: { "méz": 45, "ragasztó": 20, "lekvár": 15, "szirup": 12, "nyalóka": 8 } },
-    { question: "Nevezz meg egy dolgot, ami általában kerek!", answers: { "labda": 40, "kerék": 25, "tányér": 15, "pénzérme": 12, "óra": 8 } },
-    { question: "Nevezz meg egy iskolai tantárgyat!", answers: { "matematika": 35, "magyar": 25, "történelem": 20, "testnevelés": 15, "földrajz": 5 } },
-    { question: "Nevezz meg egy irodaszert!", answers: { "toll": 40, "papír": 25, "gémkapocs": 15, "tűzőgép": 12, "lyukasztó": 8 } },
-    { question: "Mondj egy dolgot, amit egy tanár mond az órán!", answers: { "csendet kérek": 40, "üljetek le": 20, "írjátok fel": 15, "nyissátok ki a könyvet": 13, "ki felel ma?": 12 } },
-    { question: "Nevezz meg egy népszerű háziállatot!", answers: { "kutya": 50, "macska": 30, "hörcsög": 8, "aranyhal": 7, "tengerimalac": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy virágoskertben nő!", answers: { "rózsa": 35, "tulipán": 25, "fű": 15, "gyom": 13, "ibolya": 12 } },
-    { question: "Mondj egy dolgot, amit egy születésnapi zsúron csinálnak!", answers: { "tortát esznek": 40, "ajándékot bontanak": 25, "játszanak": 15, "boldog szülinapot énekelnek": 12, "zsákbamacska": 8 } },
-    { question: "Nevezz meg egy híres magyar ételt!", answers: { "gulyásleves": 40, "pörkölt": 20, "töltött káposzta": 15, "lángos": 13, "rántott hús": 12 } },
-    { question: "Mondj egy dolgot, amit a tengerparton gyűjthetsz!", answers: { "kagyló": 50, "kavics": 25, "csigaház": 10, "szemét": 8, "üvegdarab": 7 } },
-    { question: "Nevezz meg egy dolgot, ami egy repülőgépen van!", answers: { "ülés": 40, "biztonsági öv": 20, "légikísérő": 15, "pilóta": 13, "mentőmellény": 12 } },
-    { question: "Mondj egy okot, amiért valaki sír!", answers: { "szomorú": 40, "fájdalom": 25, "meghatódott": 15, "hagymát pucol": 12, "örömében": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy játszótéren van!", answers: { "hinta": 45, "csúszda": 25, "homokozó": 15, "mászóka": 10, "libikóka": 5 } },
-    { question: "Mondj egy süteményt, amit a nagymama szokott sütni!", answers: { "almás pite": 35, "pogácsa": 25, "kalács": 20, "kakaós csiga": 15, "mákos bejgli": 5 } },
-    { question: "Nevezz meg egy dolgot, ami édes!", answers: { "csoki": 40, "cukor": 20, "méz": 15, "fagyi": 13, "sütemény": 12 } },
-    { question: "Mondj egy dolgot, ami savanyú!", answers: { "citrom": 50, "ecet": 20, "savanyú cukor": 10, "kovászos uborka": 8, "joghurt": 7 } },
-    { question: "Nevezz meg egy dolgot, ami egy babaszobában van!", answers: { "kiságy": 40, "pelenkázóasztal": 20, "játék": 15, "cumi": 13, "bébiőr": 12 } },
-    { question: "Nevezz meg egy fúvós hangszert!", answers: { "fuvola": 35, "klarinét": 25, "trombita": 20, "szaxofon": 15, "furulya": 5 } },
-    { question: "Mondj egy dolgot, amit egy tűzoltó használ!", answers: { "víztömlő": 40, "létra": 25, "sisak": 15, "fejsze": 12, "tűzoltóautó": 8 } },
-    { question: "Mondj egy dolgot, amit egy könyvtárban tilos csinálni!", answers: { "hangoskodni": 50, "enni-inni": 25, "telefonálni": 10, "szaladgálni": 8, "firkálni a könyvbe": 7 } },
-    { question: "Mondj egy dolgot, amit az őszi erdőben találsz!", answers: { "színes falevél": 35, "gesztenye": 30, "makk": 15, "gomba": 12, "toboz": 8 } },
-    { question: "Nevezz meg egy európai fővárost!", answers: { "párizs": 30, "london": 25, "róma": 20, "bécs": 15, "berlin": 10 } },
-    { question: "Mondj egy dolgot, amit egy postás csinál!", answers: { "levelet hoz": 50, "csenget": 15, "bedobja a levelet": 10, "csomagot kézbesít": 8, "szórólapot oszt": 7 } },
-    { question: "Mondj egy dolgot, amit a fodrász használ!", answers: { "olló": 45, "fésű": 20, "hajszárító": 15, "hajvágógép": 12, "hajlakk": 8 } },
-    { question: "Nevezz meg egy dolgot, amit egy garázsban tartasz!", answers: { "autó": 50, "szerszám": 20, "bicikli": 10, "fűnyíró": 8, "autógumi": 7 } },
-    { question: "Nevezz meg egy bolygót a Naprendszerben!", answers: { "föld": 35, "mars": 25, "jupiter": 15, "szaturnusz": 13, "vénusz": 12 } },
-    { question: "Mondj egy dolgot, ami egy bankban történik!", answers: { "pénzt vesznek fel": 40, "sorban állnak": 20, "pénzt fizetnek be": 15, "számlát nyitnak": 13, "hitelt intéznek": 12 } },
-    { question: "Mondj egy dolgot, amit egy esős napon csinálsz otthon!", answers: { "filmet nézek": 40, "olvasok": 25, "társasozok": 15, "alszom": 12, "sütit sütök": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy szobában fényt ad!", answers: { "lámpa": 50, "villanykörte": 20, "ablak": 10, "gyertya": 8, "csillár": 7 } },
-    { question: "Mondj egy dolgot, amit egy varrónő használ!", answers: { "cérna": 35, "tű": 30, "varrógép": 15, "olló": 12, "gyűszű": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy újságban van!", answers: { "hír": 40, "cikk": 20, "fénykép": 15, "hirdetés": 13, "rejtvény": 12 } },
-    { question: "Mondj egy dolgot, amit egy hegy tetején látsz!", answers: { "a kilátás": 40, "kereszt": 20, "kilátó": 15, "túrázó": 13, "zászlórúd": 12 } },
-    { question: "Nevezz meg egy dolgot, ami egy múzeumban van kiállítva!", answers: { "festmény": 40, "szobor": 20, "régi pénz": 15, "csontváz": 13, "koronázási ékszer": 12 } },
-    { question: "Mondj egy dolgot, amit egy fogorvos csinál!", answers: { "fogat töm": 40, "fogat húz": 25, "fúr": 15, "fogkövet szed le": 12, "röntgent készít": 8 } },
-    { question: "Nevezz meg egy dolgot, ami a reggeli készülődés része!", answers: { "felöltözés": 35, "fogmosás": 30, "reggelizés": 15, "fésülködés": 12, "ébresztő lekapcsolása": 8 } },
-    { question: "Mondj egy dolgot, ami egy tó partján van!", answers: { "stég": 35, "nádas": 25, "horgász": 15, "pad": 13, "csónak": 12 } },
-    { question: "Mondj egy dolgot, amit a Mikulás csinál!", answers: { "ajándékot hoz": 50, "a kéményen ereszkedik le": 15, "a szánján repül": 10, "olvassa a gyerekek levelét": 8, "megtölti a csizmát": 7 } },
-    { question: "Mondj egy dolgot, ami egy görög salátában van!", answers: { "feta sajt": 40, "olíva bogyó": 25, "paradicsom": 15, "uborka": 12, "lila hagyma": 8 } },
-    { question: "Nevezz meg egy dolgot, ami az égen van nappal!", answers: { "nap": 45, "felhő": 25, "madár": 10, "repülő": 8, "kék ég": 7 } },
-    { question: "Mondj egy dolgot, amit egy virágboltban lehet kapni!", answers: { "vágott virág": 40, "cserepes virág": 25, "virágföld": 15, "koszorú": 12, "váza": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy teniszmeccshez kell!", answers: { "ütő": 40, "labda": 30, "háló": 15, "pálya": 10, "bíró": 5 } },
-    { question: "Mondj egy okot, amiért valaki elpirul!", answers: { "zavarban van": 45, "szégyelli magát": 20, "bókot kapott": 15, "melege van": 12, "hazudik": 8 } },
-    { question: "Nevezz meg egy dolgot, amit egy pék használ!", answers: { "liszt": 40, "sütő": 25, "sodrófa": 15, "élesztő": 12, "dagasztógép": 8 } },
-    { question: "Mondj egy dolgot, amitől valaki tüsszent!", answers: { "por": 40, "bors": 25, "allergia": 20, "nátha": 10, "erős fény": 5 } },
-    { question: "Nevezz meg egy dolgot, amit el lehet törni!", answers: { "pohár": 35, "tányér": 30, "szív": 15, "csont": 12, "ablak": 8 } },
-    { question: "Mondj egy okot, amiért kihagysz egy edzést!", answers: { "fáradtság": 40, "betegség": 30, "időhiány": 15, "izomláz": 10, "rossz idő": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy elsősegély dobozban van!", answers: { "sebtapasz": 45, "géz": 25, "fertőtlenítő": 15, "olló": 10, "fájdalomcsillapító": 5 } },
-    { question: "Milyen színű lehet egy taxi?", answers: { "sárga": 60, "fekete": 15, "fehér": 10, "kék": 8, "zöld": 7 } },
-    { question: "Mondj egy dolgot, amit egy csecsemő csinál!", answers: { "sír": 40, "alszik": 25, "eszik": 15, "gügyög": 12, "kakil": 8 } },
-    { question: "Nevezz meg egy dolgot, amit a körmödön viselsz!", answers: { "körömlakk": 50, "műköröm": 25, "csillámpor": 10, "körömdísz": 8, "kosz": 7 } },
-    { question: "Mondj egy dolgot, ami egy repülőtéren történik!", answers: { "várakozás": 35, "becsekkolás": 25, "biztonsági ellenőrzés": 20, "gép felszáll": 15, "útlevél-ellenőrzés": 5 } },
-    { question: "Nevezz meg egy dolgot, ami puha!", answers: { "párna": 40, "takaró": 25, "plüssállat": 15, "vatta": 12, "cica szőre": 8 } },
-    { question: "Nevezz meg egy dolgot, ami éles!", answers: { "kés": 45, "olló": 25, "tű": 15, "üvegszilánk": 10, "borotva": 5 } },
-    { question: "Nevezz meg egy dolgot, aminek kereke van!", answers: { "autó": 40, "bicikli": 25, "bevásárlókocsi": 15, "görkorcsolya": 12, "babakocsi": 8 } },
-    { question: "Mondj egy dolgot, amit a strandon lehet bérelni!", answers: { "napágy": 45, "napernyő": 30, "vízibicikli": 10, "szörfdeszka": 8, "jetski": 7 } },
-    { question: "Mondj egy dolgot, amitől megijedsz éjszaka!", answers: { "furcsa zaj": 40, "árnyék": 25, "pók": 15, "rossz álom": 12, "betörő": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy íróasztalon van!", answers: { "számítógép": 35, "lámpa": 25, "tolltartó": 20, "papírok": 15, "könyv": 5 } },
-    { question: "Nevezz meg egy klasszikus udvari játékot!", answers: { "bújócska": 40, "fogócska": 25, "kidobós": 15, "ugróiskola": 12, "számháború": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy esküvői tortán van!", answers: { "nászpár figura": 45, "marcipán": 20, "virág": 15, "gyöngy": 12, "tejszínhab": 8 } },
-    { question: "Mondj egy dolgot, amit egy szobafestő használ!", answers: { "ecset": 35, "festékhenger": 30, "festék": 15, "létra": 12, "takarófólia": 8 } },
-    { question: "Nevezz meg egy dolgot, amit a tévében nézel, de nem film!", answers: { "híradó": 35, "sorozat": 30, "sportközvetítés": 15, "valóságshow": 12, "rajzfilm": 8 } },
-    { question: "Mondj egy dolgot, amit szilveszterkor csinálsz!", answers: { "pezsgőt iszok": 40, "visszaszámolok": 25, "virslit eszek": 15, "tűzijátékot nézek": 12, "bulizok": 8 } },
-    { question: "Nevezz meg egy kenyérfajtát!", answers: { "fehér kenyér": 40, "rozskenyér": 20, "kifli": 15, "zsemle": 13, "teljes kiőrlésű": 12 } },
-    { question: "Mondj egy dolgot, ami egy szállodai szobában van!", answers: { "ágy": 40, "minibár": 20, "széf": 15, "tv": 13, "törölköző": 12 } },
-    { question: "Nevezz meg egy dolgot, amitől valaki jó sofőr!", answers: { "türelem": 35, "jó reflexek": 25, "szabályok ismerete": 20, "magabiztosság": 15, "nem idegeskedik": 5 } },
-    { question: "Mondj egy dolgot, amit egy kempingezéskor viszel magaddal!", answers: { "sátor": 45, "hálózsák": 25, "zseblámpa": 15, "szúnyogriasztó": 10, "bicska": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy varródobozban van!", answers: { "cérna": 40, "tű": 25, "gomb": 15, "olló": 12, "gyűszű": 8 } },
-    { question: "Nevezz meg egy dolgot, aminek szirénája van!", answers: { "rendőrautó": 40, "mentőautó": 30, "tűzoltóautó": 20, "légvédelmi sziréna": 5, "riasztó": 5 } },
-    { question: "Mondj egy dolgot, amit egy kertitörpe csinál!", answers: { "horgászik": 35, "talicskát tol": 25, "áll": 20, "integet": 15, "alszik": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy templomban van!", answers: { "pad": 35, "oltár": 25, "orgona": 20, "kereszt": 15, "pap": 5 } },
-    { question: "Mondj egy dolgot, amit egy mozi büféjében veszel!", answers: { "pattogatott kukorica": 50, "üdítő": 25, "nachos": 15, "gumicukor": 7, "jégkása": 3 } },
-    { question: "Nevezz meg egy dolgot, ami egy fűszerpolcon van!", answers: { "só": 35, "bors": 30, "pirospaprika": 20, "majoranna": 10, "fahéj": 5 } },
-    { question: "Mondj egy dolgot, amit egy pincér csinál!", answers: { "felveszi a rendelést": 40, "kihozza az ételt": 30, "leszedi az asztalt": 15, "hozza a számlát": 10, "ajánl": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy mosógépben van!", answers: { "ruha": 45, "mosószer": 25, "víz": 15, "öblítő": 10, "fél pár zokni": 5 } },
-    { question: "Mondj egy dolgot, amit egy kalapácsra ütsz!", answers: { "szög": 50, "az ujjad": 20, "véső": 15, "szeg": 10, "fadarab": 5 } },
-    { question: "Nevezz meg egy dolgot, ami a Föld körül kering!", answers: { "hold": 45, "műhold": 30, "űrállomás": 10, "űrszemét": 8, "aszteroida": 7 } },
-    { question: "Mondj egy okot, amiért valaki elkésik!", answers: { "elaludt": 40, "forgalmi dugó": 30, "nem jött a busz": 15, "nem talált parkolót": 10, "elfelejtette": 5 } },
-    { question: "Nevezz meg egy idegesítő rovart!", answers: { "szúnyog": 50, "légy": 25, "darázs": 10, "hangya": 8, "csótány": 7 } },
-    { question: "Mondj egy dolgot, amit egy színpadon látsz a színészen kívül!", answers: { "díszlet": 45, "függöny": 20, "reflektor": 15, "kellék": 12, "mikrofon": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy szendvicsben lehet a sajt mellett!", answers: { "sonka": 40, "paradicsom": 25, "saláta": 15, "paprika": 12, "vaj": 8 } },
-    { question: "Nevezz meg egy dolgot, amitől büdös lehet a hűtő!", answers: { "romlott étel": 35, "hagyma": 25, "sajt": 20, "hal": 15, "kiömlött tej": 5 } },
-    { question: "Mondj egy dolgot, amit egy eladó mond a boltban!", answers: { "segíthetek?": 40, "más valamit?": 25, "kártyával vagy készpénzzel?": 15, "köszönöm a vásárlást": 12, "blokkot adhatok?": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy madáretetőben van!", answers: { "napraforgómag": 45, "cinkegolyó": 25, "madár": 15, "köles": 10, "dió": 5 } },
-    { question: "Mondj egy dolgot, amit egy dzsinn teljesít!", answers: { "kívánság": 60, "gazdagságot": 15, "boldogságot": 10, "hatalmat": 8, "szabadságot": 7 } },
-    { question: "Nevezz meg egy dolgot, amitől koszos lesz a cipőd!", answers: { "sár": 50, "por": 20, "fű": 10, "hó": 8, " pocsolya": 7 } },
-    { question: "Mondj egy dolgot, amit egy majom eszik!", answers: { "banán": 60, "gyümölcs": 15, "magvak": 10, "levél": 8, "rovarok": 7 } },
-    { question: "Nevezz meg egy dolgot, ami egy kesztyűtartóban van!", answers: { "forgalmi engedély": 35, "napszemüveg": 25, "papírzsebkendő": 15, "térkép": 12, "CD": 8 } },
-    { question: "Mondj egy dolgot, amit egy fotós csinál!", answers: { "fényképez": 45, "vakuzik": 20, "élesít": 15, "modellt instruál": 12, "képet szerkeszt": 8 } },
-    { question: "Nevezz meg egy tipikus Valentin-napi ajándékot!", answers: { "csoki": 40, "virág": 30, "plüssmaci": 15, "ékszer": 10, "romantikus vacsora": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy teafilterben van!", answers: { "teafű": 50, "gyógynövény": 20, "gyümölcsdarabok": 15, "cérna": 10, "papír": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy akváriumban van!", answers: { "hal": 45, "víz": 25, "kavics": 15, "vízinövény": 10, "levegőztető": 5 } },
-    { question: "Mondj egy dolgot, amit egy birkózó csinál!", answers: { "földrevitel": 35, "fogást keres": 25, "gáncsol": 15, "tus": 13, "izzad": 12 } },
-    { question: "Mondj egy dolgot, amitől valaki csuklik!", answers: { "gyorsan evett": 35, "szénsavasat ivott": 25, "levegőt nyelt": 20, "idegesség": 15, "ijedtség": 5 } },
-    { question: "Nevezz meg egy dolgot, amit egy kém használ!", answers: { "álruha": 35, "lehallgató készülék": 25, "rejtett kamera": 20, "hangtompítós pisztoly": 15, "titkosírás": 5 } },
-    { question: "Mondj egy dolgot, ami egy tornazsákban van!", answers: { "tornacipő": 40, "póló": 25, "törölköző": 15, "kulacs": 12, "dezodor": 8 } },
-    { question: "Nevezz meg egy állatot, ami egy barlangban él!", answers: { "denevér": 50, "medve": 25, "pók": 10, "giliszta": 8, "ősember": 7 } },
-    { question: "Mondj egy dolgot, amit egy kutya csinál, ha örül!", answers: { "csóválja a farkát": 50, "ugrál": 20, "nyalogat": 15, "vakkant": 10, "liheg": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy vulkánból tör ki!", answers: { "láva": 50, "hamu": 25, "füst": 10, "kőzet": 8, "gáz": 7 } },
-    { question: "Mondj egy dolgot, ami egy postabélyegen van!", answers: { "érték (szám)": 35, "kép": 30, "ország neve": 20, "évszám": 10, "címer": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy fagylaltkehely tetején van!", answers: { "tejszínhab": 40, "csokiöntet": 25, "ostya": 15, "gyümölcs": 12, "cukorszórás": 8 } },
-    { question: "Nevezz meg egy helyet, ahol visszhang van!", answers: { "barlang": 40, "hegyekben": 25, "alagút": 15, "üres szoba": 12, "kút": 8 } },
-    { question: "Nevezz meg egy dolgot, amit egy gyógyszertárban veszel!", answers: { "fájdalomcsillapító": 40, "vitamin": 25, "köptető": 15, "sebtapasz": 12, "lázcsillapító": 8 } },
-    { question: "Mondj egy dolgot, amit ellenőrzöl, mielőtt elindulsz otthonról!", answers: { "kulcs": 35, "pénztárca": 30, "telefon": 20, "hogy bezártam-e az ajtót": 10, "hogy lekapcsoltam-e a villanyt": 5 } },
-    { question: "Nevezz meg egy dolgot, aminek lyuk van a közepén!", answers: { "fánk": 40, "mentőöv": 25, "cd lemez": 15, "perec": 12, "gomb": 8 } },
-    { question: "Mondj egy okot, amiért valaki rádiót hallgat!", answers: { "zene": 45, "hírek": 20, "autóvezetés közben": 15, "forgalmi információk": 12, "háttérzajnak": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy kaszinóban van!", answers: { "nyerőgép": 40, "rulett asztal": 25, "zseton": 20, "kártya": 10, "pénz": 5 } },
-    { question: "Mondj egy dolgot, amihez szerencse kell!", answers: { "lottó": 45, "kártyajáték": 25, "kockadobás": 15, "vizsga": 10, "szerelem": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy üres szobában van!", answers: { "visszhang": 35, "por": 25, "pókháló": 15, "levegő": 12, "csend": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy bowlingpályán van!", answers: { "golyó": 40, "bábu": 30, "pálya": 15, "cipő": 10, "eredményjelző": 5 } },
-    { question: "Nevezz meg egy dolgot, amit egy postai csomagban küldesz!", answers: { "könyv": 35, "ruha": 30, "ajándék": 15, "játék": 12, "étel": 8 } },
-    { question: "Mondj egy dolgot, amit egy kertész használ!", answers: { "metszőolló": 35, "ásó": 25, "gereblye": 15, "locsolókanna": 13, "kapa": 12 } },
-    { question: "Nevezz meg egy dolgot, amit az emberek gyűjtenek!", answers: { "bélyeg": 40, "szalvéta": 25, "pénzérme": 15, "képeslap": 12, "hűtőmágnes": 8 } },
-    { question: "Mondj egy dolgot, amit egy bíró használ!", answers: { "kalapács": 50, "talár": 20, "törvénykönyv": 15, "paróka": 10, "szemüveg": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy liftben van!", answers: { "gomb": 45, "tükör": 25, "kijelző": 10, "zene": 8, "kapaszkodó": 7 } },
-    { question: "Mondj egy dolgot, ami egy gombócban lehet!", answers: { "szilva": 40, "túró": 25, "baracklekvár": 15, "hús": 12, "máj": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy palacsintatésztában van!", answers: { "liszt": 40, "tojás": 25, "tej": 20, "cukor": 10, "szóda": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy számítógép belsejében van!", answers: { "processzor": 35, "memória": 30, "merevlemez": 15, "ventilátor": 12, "alaplap": 8 } },
-    { question: "Mondj egy dolgot, amit egy bűvész mond!", answers: { "abrakadabra": 40, "hókuszpókusz": 25, "csiribú-csiribá": 15, "kérem a következő önkéntest": 12, "nézzék a kezemet": 8 } },
-    { question: "Mondj egy dolgot, amitől valaki libabőrös lesz!", answers: { "hideg": 45, "félelem": 25, "jó zene": 15, "meghatódás": 10, "ha valaki a hátamon rajzol": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy teherautó platóján lehet!", answers: { "sóder": 35, "bútor": 25, "építési törmelék": 15, "fa": 12, "árú": 8 } },
-    { question: "Nevezz meg egy helyet, ahol csendben kell lenni!", answers: { "könyvtár": 45, "templom": 25, "temető": 15, "színház": 10, "vizsga": 5 } },
-    { question: "Nevezz meg egy dolgot, aminek szarva van!", answers: { "szarvas": 40, "tehén": 25, "kecske": 15, "ördög": 12, "bika": 8 } },
-    { question: "Mondj egy dolgot, amit egy légiutas-kísérő mond!", answers: { "kapcsolják be a biztonsági öveket": 45, "kávét, teát, üdítőt?": 25, "köszönjük, hogy velünk utazott": 10, "mutassa be a vészkijáratokat": 8, "helyezzék függőleges állásba az üléstámlát": 7 } },
-    { question: "Nevezz meg egy dolgot, amit egy állatorvos csinál!", answers: { "beolt": 40, "megvizsgál": 25, "gyógyszert ad": 15, "műt": 12, "chipet ültet be": 8 } },
-    { question: "Nevezz meg egy dolgot, amit egy zsebkendőbe teszel!", answers: { "az orrod": 40, "a kezed": 25, "pénz": 15, "rágó": 12, "könnyek": 8 } },
-    { question: "Mondj egy dolgot, amit a kenyérre kensz!", answers: { "vaj": 40, "lekvár": 20, "májkrém": 15, "méz": 13, "sajtkrém": 12 } },
-    { question: "Nevezz meg egy dolgot, ami egy kastélyban ijesztő lehet!", answers: { "kísértet": 45, "pókháló": 20, "nyikorgó padló": 15, "sötét folyosó": 12, "páncél": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy hangszer tokjában van!", answers: { "hangszer": 50, "kottatartó": 15, "gyanta (hegedű)": 10, "tisztítókendő": 8, "pengető (gitár)": 7 } },
-    { question: "Mondj egy dolgot, ami egy méhkaptárban van!", answers: { "méh": 45, "méz": 30, "méhkirálynő": 10, "lép": 8, "viasz": 7 } },
-    { question: "Mondj egy dolgot, ami egy bírósági tárgyalóteremben van!", answers: { "bíró": 35, "vádlottak padja": 25, "ügyvéd": 15, "esküdtszék": 12, "tanúk padja": 8 } },
-    { question: "Nevezz meg egy dolgot, amit egy régész találhat!", answers: { "csontváz": 35, "cserépedény": 30, "régi pénzérme": 15, "fosszília": 12, "eszköz": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy junk-fiókban (mindenes fiókban) van!", answers: { "elem": 35, "gomb": 25, "régi kulcs": 15, "gémkapocs": 12, "ismeretlen csavar": 8 } },
-    { question: "Mondj egy dolgot, amit egy művész használ!", answers: { "ecset": 40, "festék": 30, "vászon": 15, "festőállvány": 10, "ceruza": 5 } },
-    { question: "Nevezz meg egy dolgot, ami lebeg a vízen!", answers: { "fadarab": 35, "gumilabda": 25, "levél": 20, "mentőöv": 15, "hajó": 5 } },
-    { question: "Mondj egy dolgot, amit egy salátában találsz a salátalevélen kívül!", answers: { "paradicsom": 40, "uborka": 25, "sajt": 15, "öntet": 12, "hagyma": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy kamrában van!", answers: { "lekvár": 40, "befőtt": 30, "liszt": 15, "krumpli": 10, "hagyma": 5 } },
-    { question: "Mondj egy dolgot, ami egy viharban történik!", answers: { "villámlás": 40, "dörgés": 30, "nagy szél": 15, "jégeső": 10, "áramszünet": 5 } },
-    { question: "Nevezz meg egy dolgot, amit egy síelő visel a ruháján kívül!", answers: { "síszemüveg": 35, "sisak": 30, "síléc": 15, "síbot": 12, "kesztyű": 8 } },
-    { question: "Mondj egy dolgot, amit egy kulcskarikán tartasz!", answers: { "lakáskulcs": 45, "kocsikulcs": 25, "kulcstartó figura": 15, "sörnyitó": 10, "bevásárlókocsi érme": 5 } },
-    { question: "Nevezz meg egy dolgot, amit egy palackban tárolsz!", answers: { "víz": 40, "üdítő": 25, "bor": 15, "ecet": 12, "olaj": 8 } },
-    { question: "Nevezz meg egy dolgot, amit egy királynő visel!", answers: { "korona": 50, "palást": 20, "ékszer": 15, "jogar": 10, "kesztyű": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy golfpályán van!", answers: { "lyuk": 40, "zászló": 25, "fű": 15, "homokcsapda": 12, "golfkocsi": 8 } },
-    { question: "Mondj egy dolgot, amit egy asztalos csinál!", answers: { "fűrészel": 35, "gyalul": 25, "csiszol": 20, "mér": 15, "szögel": 5 } },
-    { question: "Nevezz meg egy dolgot, amit egy zsonglőr dobál!", answers: { "labda": 45, "buzogány": 25, "karika": 15, "kés": 10, "égő fáklya": 5 } },
-    { question: "Mondj egy dolgot, amit egy testőr csinál!", answers: { "véd": 40, "figyel": 25, "kísér": 15, "körbenéz": 12, "fülhallgatóban beszél": 8 } },
-    { question: "Nevezz meg egy hangot, ami felébreszthet éjjel!", answers: { "ébresztőóra": 35, "dörrenés": 25, "kutya ugatás": 15, "sír a baba": 12, "horkolás": 8 } },
-    { question: "Mondj egy dolgot, amit egy eljegyzési gyűrűn látsz!", answers: { "gyémánt": 45, "kő": 25, "arany": 15, "gravírozás": 10, "foglalat": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy metróállomáson van!", answers: { "mozgólépcső": 40, "metrószerelvény": 25, "sín": 15, "hirdetés": 12, "pad": 8 } },
-    { question: "Mondj egy dolgot, amitől ragad a kezed!", answers: { "méz": 40, "ragasztó": 25, "lekvár": 15, "cukorka": 12, "festék": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy gida lábán van!", answers: { "patkó": 45, "szőr": 25, "pata": 15, "sár": 10, "seb": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy békatalpon van!", answers: { "hártya": 40, "ujj": 25, "bőr": 15, "sima felület": 12, "nedvesség": 8 } },
-    { question: "Nevezz meg egy dolgot, amit egy manikűrös használ!", answers: { "körömlakk": 40, "körömreszelő": 30, "olló": 15, "lakklemosó": 10, "vatta": 5 } },
-    { question: "Mondj egy dolgot, amit egy nyomozó keres egy bűntett helyszínén!", answers: { "ujjlenyomat": 45, "lábnyom": 20, "fegyver": 15, "hajszál": 12, "vérnyom": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy gyárban van!", answers: { "gép": 40, "munkás": 25, "futószalag": 15, "zaj": 12, "termék": 8 } },
-    { question: "Mondj egy dolgot, amit egy légtornász csinál!", answers: { "lóg": 35, "pörög": 25, "szaltózik": 20, "kapaszkodik": 15, "egyensúlyoz": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy vízimalomban van!", answers: { "vízikerék": 45, "víz": 20, "malomkő": 15, "liszt": 12, "zsák": 8 } },
-    { question: "Mondj egy dolgot, amit egy kincsvadász keres!", answers: { "kincsesláda": 45, "arany": 25, "térkép": 15, "ékszer": 10, "ás": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy űrállomáson van!", answers: { "űrhajós": 40, "lebegés": 20, "számítógép": 15, "ablak a Földre": 13, "szkafander": 12 } },
-    { question: "Nevezz meg egy dolgot, amit egy elhagyatott házban találsz!", answers: { "pókháló": 40, "por": 25, "törött ablak": 15, "nyikorgó padló": 12, "régi bútor": 8 } },
-    { question: "Mondj egy dolgot, amit egy esküvői tanú csinál!", answers: { "aláír": 45, "gyűrűt ad": 25, "beszédet mond": 15, "segít": 10, "tanúsít": 5 } },
-    { question: "Nevezz meg egy dolgot, amit egy síugró csinál!", answers: { "ugrik": 45, "repül": 25, "lecsúszik": 15, "talajra érkezik": 10, "egyensúlyoz": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy laboratóriumban van!", answers: { "kémcső": 40, "mikroszkóp": 25, "vegyszer": 15, "fehér köpeny": 12, "védőszemüveg": 8 } },
-    { question: "Mondj egy okot, amiért valaki didereg!", answers: { "fázik": 50, "fél": 25, "lázas": 15, "ideges": 8, "vizes lett": 2 } },
-    { question: "Nevezz meg egy dolgot, amit egy pilóta csinál!", answers: { "repülőt vezet": 45, "felszáll": 20, "leszáll": 15, "beszél a toronnyal": 12, "bejelenti az utazási információkat": 8 } },
-    { question: "Mit teszel egy kenyérpirítóba?", answers: { "kenyérszelet": 60, "kalács": 15, "zsemle": 10, "gofri": 8, "bagel": 7 } },
-    { question: "Nevezz meg egy dolgot, ami egy papírsárkányon van!", answers: { "madzag": 40, "farok": 30, "váz": 15, "papír": 10, "minta": 5 } },
-    { question: "Mondj egy dolgot, amit a tavasz beköszöntével látsz!", answers: { "hóvirág": 40, "rügyező fák": 25, "madárcsicsergés": 15, "hosszabb nappalok": 12, "olvad a hó": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy tevén van!", answers: { "púp": 60, "szőr": 15, "hosszú szempilla": 10, "nyereg": 8, "paták": 7 } },
-    { question: "Nevezz meg egy dolgot, ami egy kalóztérképen van!", answers: { "X (a kincs helye)": 50, "sziget": 20, "hajó": 10, "koponya": 8, "iránytű": 7 } },
-    { question: "Mit használsz esőben az esernyőn kívül?", answers: { "esőkabát": 45, "gumicsizma": 30, "kapucni": 15, "autó": 8, "semmit/megázok": 2 } },
-    { question: "Nevezz meg egy dolgot, ami egy hegedűn van!", answers: { "húr": 45, "vonó": 25, "kulcsok": 15, "csiga": 10, "f-lyuk": 5 } },
-    { question: "Mit csinál egy bíró egy sportmeccsen?", answers: { "sípol": 40, "szabálytalanságot jelez": 25, "sárga/piros lapot ad": 15, "időt mér": 12, "döntést hoz": 8 } },
-    { question: "Nevezz meg egy dolgot, amit egy könyvtáros csinál!", answers: { "könyvet ad ki/vesz vissza": 45, "csendre int": 20, "segít keresni": 15, "polcra rakja a könyveket": 12, "pecsétel": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy zsebórán van!", answers: { "lánc": 40, "mutató": 25, "fedél": 15, "számok": 12, "felhúzó": 8 } },
-    { question: "Mondj egy dolgot, ami egy gyertyán van!", answers: { "kanóc": 50, "láng": 25, "viasz": 15, "melegség": 8, "fény": 2 } },
-    { question: "Nevezz meg egy dolgot, amit egy bűvész a cilinderéből húz elő!", answers: { "nyúl": 50, "galamb": 20, "kendő": 15, "virágcsokor": 10, "kártya": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy jégkockatartóban van!", answers: { "víz": 40, "jégkocka": 35, "fagyasztott gyümölcs": 10, "kávé": 8, "püré": 7 } },
-    { question: "Nevezz meg egy dolgot, ami egy távirányítón van!", answers: { "gomb": 50, "számok": 20, "elem": 15, "ki/be kapcsoló": 10, "hangerőszabályzó": 5 } },
-    { question: "Mondj egy dolgot, ami egy várárokban lehet!", answers: { "víz": 45, "krokodil": 20, "felvonóhíd": 15, "sár": 12, "hal": 8 } },
-    { question: "Nevezz meg egy dolgot, ami egy űrhajón van!", answers: { "hajtómű": 35, "űrhajós": 25, "vezérlőpult": 20, "ablak": 15, "napelem": 5 } },
-    { question: "Nevezz meg egy dolgot, amit egy tündér csinál!", answers: { "varázsol": 45, "repül": 25, "kívánságot teljesít": 15, "segít": 10, "csillámport szór": 5 } },
-    { question: "Mondj egy dolgot, amit a szüleidtől tanultál!", answers: { "járni": 35, "beszélni": 25, "biciklizni": 15, "il Szabályokat": 12, "enni": 8 } },
-    { question: "Nevezz meg egy dolgot, amit a fogorvosi székben csinálsz!", answers: { "tátod a szád": 50, "ülsz": 20, "szorítod a karfát": 10, "hallgatod a fúrót": 8, "öblögetsz": 7 } },
-    { question: "Nevezz meg egy dolgot, ami egy mikroszkóp alatt lehet!", answers: { "baktérium": 40, "sejt": 30, "porszem": 10, "hajszál": 8, "vízcsepp": 7 } },
-    { question: "Nevezz meg egy dolgot, ami egy bábjátékban van!", answers: { "báb": 50, "paraván": 20, "bábjátékos": 10, "hang": 8, "történet": 7 } },
-    { question: "Mondj egy dolgot, amit egy favágó használ!", answers: { "láncfűrész": 45, "fejsze": 35, "sisak": 10, "védőszemüveg": 5, "bakancs": 5 } },
-    { question: "Nevezz meg egy dolgot, ami egy szökőkútban van!", answers: { "víz": 50, "pénzérme": 25, "szobor": 10, "galamb": 8, "alga": 7 } },
-    { question: "Nevezz meg egy dolgot, amit egy artista csinál a cirkuszban!", answers: { "egyensúlyoz": 35, "szaltózik": 25, "zsonglőrködik": 20, "lóg a trapézon": 15, "hajlong": 5 } },
-    { question: "Mondj egy dolgot, amit egy légkalapács csinál!", answers: { "zajt": 40, "feltöri az aszfaltot": 35, "port": 10, "rezeg": 8, "lyukat készít": 7 } },
-    { question: "Nevezz meg egy dolgot, ami egy szemetesautóban van!", answers: { "szemét": 40, "szemeteszsák": 25, "szag": 15, "prés": 12, "kukás": 8 } },
-    { question: "Mondj egy okot, amiért valaki elájul!", answers: { "vér látványa": 40, "nagy fájdalom": 25, "ijedtség": 15, "nagy meleg": 12, "levegőhiány": 8 } },
-            { question: "Mondj egy dolgot, amit egy iskolatáskában találsz!", answers: { "Könyv": 40, "Füzet": 30, "Toll": 15, "Tolltartó": 8, "Vonalzó": 5, "Radír": 2 } },
-            { question: "Nevezz meg egy népszerű pizzafeltétet!", answers: { "Sonka": 35, "Gomba": 25, "Szalámi": 20, "Kukorica": 12, "Sajt": 6, "Ananász": 2 } },
-            { question: "Mondj egy dolgot, amit nyaraláskor csinálsz!", answers: { "Fürdés": 33, "Napozás": 28, "Városnézés": 18, "Pihenés": 11, "Evés": 7, "Olvasás": 3 } },
-            { question: "Nevezz meg egy időjárási jelenséget!", answers: { "Eső": 42, "Napsütés": 25, "Hó": 15, "Szél": 10, "Villámlás": 6, "Köd": 2 } },
-            { question: "Mondj egy dolgot, ami hideg!", answers: { "Jég": 45, "Hó": 28, "Víz": 12, "Fagylalt": 9, "Fém": 4, "Tél": 2 } },
-            { question: "Nevezz meg egy gyümölcsöt!", answers: { "Alma": 38, "Banán": 29, "Narancs": 16, "Szőlő": 9, "Eper": 5, "Körte": 3 } },
-            { question: "Mondj egy tárgyat a konyhából!", answers: { "Tányér": 30, "Pohár": 25, "Villa": 20, "Kés": 13, "Lábas": 8, "Kanál": 4 } },
-            { question: "Nevezz meg egy foglalkozást, amihez egyenruha kell!", answers: { "Rendőr": 41, "Tűzoltó": 27, "Katona": 14, "Orvos": 9, "Pincér": 6, "Postás": 3 } },
-            { question: "Mondj egy dolgot, amit egy cirkuszban láthatsz!", answers: { "Bohóc": 36, "Oroszlán": 26, "Elefánt": 17, "Akrobata": 11, "Zsonglőr": 7, "Sátor": 3 } },
-            { question: "Mondj egy okot, amiért telefonálsz!", answers: { "Üdvözlés": 32, "Információkérés": 28, "Segélyhívás": 19, "Időpont egyeztetés": 11, "Rendelés": 6, "Pletyka": 4 } },
-        ];
-        
         // --- EREDETI JÁTÉKLOGIKA ---
         const synonymMap = { "auto": ["kocsi", "gepjarmu", "automobil", "verda", "jargany"], "repulo": ["repulogep", "gepmadar", "szarnyasgep"], "vonat": ["szerelveny", "vasut"], "bicikli": ["kerekpar", "bringa", "canga"], "hajo": ["csonak", "lada", "uszaly"], "telefon": ["mobil", "mobiltelefon", "keszulek"], "szamitogep": ["komputer", "pc", "laptop", "notebook"], "televizio": ["teve", "tv", "keszulek"], "konyv": ["olvasmany", "mu", "kotet"], "toll": ["iroeszkoz", "golyostoll"], "ceruza": ["grafit", "grafitceruza"], "kulcs": ["slusszkulcs", "lakaskulcs"], "penz": ["love", "zseton", "cash", "valuta", "fizetoeszkoz", "steksz"], "szemetes": ["kuka", "hulladekgyujto", "szemeteslada"], "haz": ["otthon", "epulet", "ingatlan", "lakas"], "lakas": ["apartman", "garzon", "otthon"], "ajto": ["kapu", "bejarat"], "ablak": ["uveg", "nyilaszaró"], "agy": ["fekvohely", "nyugagy"], "szek": ["uloalkalmatossag", "fotel", "pad"], "asztal": ["butor", "iroasztal", "etkezoasztal"], "lampa": ["vilagitas", "ego", "csillar"], "szekreny": ["gardrob", "butor"], "szappan": ["mosakodoszer", "tisztalkodoszer"], "fogkefe": ["foghienoeszkoz"], "ruha": ["oltozek", "viselet", "holmi", "cucc"], "cipo": ["labbali", "surrano", "topan"], "kalapacs": ["szerszam", "veso"], "csavarhuzo": ["szerszam", "behajto"], "furesz": ["szerszam", "vagoeszkoz"], "ember": ["szemely", "leny", "ferfi", "no"], "ferfi": ["pasas", "csavo", "srac"], "no": ["holgy", "csaj", "leany"], "gyerek": ["gyermek", "kolyok", "csemete"], "barat": ["haver", "cimbora", "pajtas"], "orvos": ["doktor", "doki", "medikus"], "rendor": ["zsernyak", "zsaru", "szerv"], "tanar": ["oktato", "pedagogus", "tanito"], "szakacs": ["seff", "konyhafonok"], "katona": ["bajtars", "harcos"], "etel": ["elelem", "elelmiszer", "ennivalo", "kaja"], "ital": ["innivalo", "folyadek"], "viz": ["folyadek", "ivoviz"], "kenyer": ["cipó", "pekáru"], "szendvics": ["uzsonna", "tizorai"], "husleves": ["tyukhusleves", "marhahusleves"], "gulyasleves": ["gulyas"], "halaszle": ["halpaprikas"], "csokolade": ["csoki", "edesseg"], "cukorka": ["cukor", "edesseg", "nyaloka"], "fagylalt": ["fagyi", "jegkrem"], "torta": ["sutemeny", "edesseg"], "kave": ["fekete", "eszpresszo", "presszokave"], "sor": ["ser", "sör"], "bor": ["nedű", "nektar"], "kutya": ["eb", "bloki", "kutyus", "kope"], "macska": ["cica", "cicus", "masni"], "lo": ["paripa", "hatas"], "diszno": ["sertes", "rofi", "malac"], "madar": ["szarnyas", "repulo allat"], "hal": ["viziallat"], "erdo": ["rengeteg", "liget"], "hegy": ["csucs", "orom"], "folyo": ["folyam", "vizfolyas"], "to": ["alloviz", "tavacska"], "tenger": ["ocean", "viz"], "varos": ["telepules", "nagyvaros"], "falu": ["telepules", "kozseg"], "utca": ["ut", "setany"], "strand": ["part", "furdohely", "plazs"], "iskola": ["tanev", "oktatasi intezmeny", "suli"], "korhaz": ["klinika", "gyogyintezet", "szanatorium"], "bolt": ["uzlet", "kereskedes"], "szerelem": ["szeretet", "rajongas", "vonzalom"], "boldogsag": ["orom", "vidamsag", "elegedettseg"], "felelem": ["retteges", "paranoia", "fobia"], "harc": ["kuzdelem", "csata", "utkozet"], "munka": ["allas", "hivatas", "meló"], "jatek": ["szorakozas", "időtöltés"], "sport": ["mozgas", "testmozgas"], "zene": ["muzsika", "dallam"], "film": ["mozi", "alkotas"], "szin": ["arnyalat", "kolorit"], "piros": ["voros", "veres"], "kek": ["egszinkek"], "sarga": ["citromsarga"], "feher": ["hófehér"], "fekete": ["koromfekete"], "aludni": ["szunyalni", "horpasztani", "durni"], "olvasni": ["betuzni", "bongeszni"], "nadrag": ["pantalon", "farmernadrag", "farmer"], "polo": ["felso", "T-shirt", "triko"], "ing": ["bluz", "felso"], "szoknya": ["mini", "maxi"], "kabát": ["dzseki", "felkabát", "zakó"], "sapka": ["kalap", "fedor", "barett"], "sal": ["nyakmelegito", "kendő"], "kesztyu": ["otujjas"], "zokni": ["harisnya", "titokzokni"], "szemuveg": ["brill", "látásjavító", "pápaszem"], "ora": ["karora", "idomero"], "taska": ["szatyor", "hatizsak", "borond"], "fej": ["kobak", "bura"], "haj": ["frizura", "sörény"], "szem": ["latoszerv", "tekintet"], "ful": ["halloszerv"], "orr": ["szagloszerv"], "szaj": ["csor", "pofazacsko"], "kez": ["mancs", "végtag"], "lab": ["csulok", "végtag"], "sziv": ["kardio", "pumpa"], "betegseg": ["kor", "nyavalya", "jarvany"], "gyogyszer": ["pirula", "orvossag", "tabletta"], "fajdalom": ["szenvedes", "kín"], "etterem": ["vendeglo", "bisztro", "kifozde", "csarda"], "kocsma": ["sorozo", "borozó", "pub"], "mozi": ["filmszinhaz"], "szinhaz": ["jatszohely"], "muzeum": ["kiallitas", "galeria", "keptar"], "konyvtar": ["olvasoterem"], "park": ["kert", "liget"], "jatszoter": ["homokozo"], "templom": ["egyhaz", "bazilika", "imola"], "repuloter": ["legi kikoto"], "palyaudvar": ["allomas", "vasutallomas"], "hid": ["viadukt", "athidalo"], "fogo": ["csipesz", "harapofogo"], "furo": ["furogep"], "villa": ["etkezoeszkoz"], "kanal": ["etkezoeszkoz"], "kes": ["bicska", "vagoeszkoz"], "tanyer": ["tal", "edény"], "pohar": ["uvegpohar", "bogre"], "ollo": ["vagoeszkoz"], "uveg": ["palack", "flakon"], "fa": ["noveny", "facsemete", "lombkorona"], "virag": ["noveny", "viragszal"], "fu": ["gyep", "pazsit"], "eso": ["csapadek", "zapor"], "ho": ["csapadek", "hópehely"], "szel": ["fuvallat", "vihar", "szelet"], "nap": ["csillag", "napsugar"], "hold": ["egitest", "holdfeny"], "csillag": ["egitest", "fenypont"], "felho": ["para", "gomolyfelho"], "otlet": ["gondolat", "eszme", "elgondolas"], "hiba": ["tevedes", "baki", "elnezes"], "segitseg": ["tamogatas", "keznyujtas"], "beszelgetes": ["parbeszed", "cseveges", "diskurzus", "tarsalgas"], "kerdes": ["felvetes", "problema"], "valasz": ["felelet", "reakcio"], "tudás": ["ismeret", "muveltseg", "intelligencia"], "ero": ["energia", "potencia"], "gyorsasag": ["sebesseg", "tempó"], "szepseg": ["csinossag", "báj"], "utazas": ["kirandulas", "nyaralas", "tura"], "tanulas": ["kepzes", "oktatas"], "enni": ["etkezni", "falatozni", "majszolni"], "inni": ["folyadekot fogyasztani", "kortyolni"], "nezni": ["latni", "pillantani", "bamulni"], "hallgatni": ["figyelni", "fulelni"], "futni": ["szaladni", "rohanni", "iramodni"], "irni": ["jegyezni", "firkalni", "fogalmazni"], "nevetni": ["kacagni", "mosolyogni", "vihogni"], "sirni": ["konnyezni", "zokogni", "pityeregni"], "harag": ["duh", "mereg", "indulat"], "szomorusag": ["banat", "csuggedes", "melankolia"], "elet": ["letezes", "egzisztencia"], "halal": ["veg", "elhunyas", "mulandosag"], "ido": ["pillanat", "perc", "ora"],
         };
@@ -1043,17 +1076,30 @@
         guessesListEl=document.getElementById('guesses-list'),questionEl=document.getElementById('question'),boardEl=document.getElementById('board'),scoreEl=document.getElementById('score'),
         guessInput=document.getElementById('guess-input'),guessButton=document.getElementById('guess-button'),nextRoundButton=document.getElementById('next-round-button'),
         buttonContainer=document.getElementById('button-container'),strikesContainer=document.getElementById('strikes'),strikes=[document.getElementById('strike1'),document.getElementById('strike2'),document.getElementById('strike3')],
-        playedBlockTimeEl=document.getElementById('played-block-time'),notificationBar=document.getElementById('notification-bar'),timerDisplay=document.getElementById('timer-display'),roundTimerBox = document.getElementById('round-timer-box'),roundTimerEl = document.getElementById('round-timer'),
+        playedBlockTimeEl=document.getElementById('played-block-time'),notificationBar=document.getElementById('notification-bar'),timerDisplay=document.getElementById('timer-display'),roundTimerBox = document.getElementById('round-timer-box'),
+        roundTimerEl = document.getElementById('round-timer'),
         roundInfoBox = document.getElementById('round-info-box'),
-        grandPrizeContainer=document.getElementById('grand-prize-container'),evaluationContainer=document.getElementById('evaluation-container'),gpTimerEl=document.getElementById('gp-timer'),
-        gpQuestionTextEl=document.getElementById('gp-question-text'),gpOptionsAreaEl=document.getElementById('gp-options-area'),gpProgressFillEl=document.getElementById('gp-progress-fill'),
-        evalSummaryEl=document.getElementById('evaluation-summary'),evalListEl=document.getElementById('evaluation-list'),backToStartBtn=document.getElementById('back-to-start-btn');
+        grandPrizeContainer=document.getElementById('grand-prize-container'),
+        evaluationContainer=document.getElementById('evaluation-container'),
+        gpTimerEl=document.getElementById('gp-timer'),
+        gpQuestionTextEl=document.getElementById('gp-question-text'),
+        gpOptionsAreaEl=document.getElementById('gp-options-area'),
+        gpProgressFillEl=document.getElementById('gp-progress-fill'),
+        evalSummaryEl=document.getElementById('evaluation-summary'),
+        evalListEl=document.getElementById('evaluation-list'),
+        backToStartBtn=document.getElementById('back-to-start-btn');
 
         let currentQuestions=[],currentQuestionIndex=-1,currentAnswers={},revealedAnswers=[],currentStrikes=0,score=0,currentStreak=0,dailyScore=0;
         const GAME_INTERVAL_MS=15*60*1000,ROUND_DURATION=30; 
         let roundScore=0,goldenAnswer=null,isDoublePointsRound=false,isTimePanicRound=false,timePanicTimer=null,timeRemaining=0,isForditoRound=false,roundTimer=null,roundTimeRemaining=0;
         const TIME_PANIC_ROUND=7,FORDITO_ROUND=9;
-        let grandPrizeQuestions=[],currentGPQuestionIndex=0,playerAnswers=[],grandPrizeTimer;
+        
+        // Fődíj Játék változók
+        let grandPrizeTimer;
+        let gpQuestions = [];
+        let incorrectGPQuestions = [];
+        let finalPlayerAnswers = new Map();
+
 
         function getTodayString(){return new Date().toISOString().slice(0,10);}
         function loadDailyScore(){const savedData=JSON.parse(localStorage.getItem('tippBajnokData'));if(savedData&&savedData.date===getTodayString()){dailyScore=savedData.score;}else{dailyScore=0;saveDailyScore();}score=dailyScore;updateScoreDisplay();}
@@ -1095,18 +1141,224 @@
         nextRoundButton.classList.add('hidden');const oldRevealBtn=document.getElementById('reveal-button');if(oldRevealBtn)oldRevealBtn.remove();
         let i=1;for(const answer in currentAnswers){const card=document.createElement('div');card.classList.add('answer-card');card.dataset.answerKey=answer;card.innerHTML=`<div class="card-face card-front">${i}</div><div class="card-face card-back"><span class="answer-text">${answer.toUpperCase()}</span><span class="answer-points">${currentAnswers[answer]}</span></div>`;boardEl.appendChild(card);i++;}}
         function addGuessToList(guess,isCorrect){const li=document.createElement('li');li.textContent=guess;li.classList.add(isCorrect?'correct-guess':'wrong-guess');guessesListEl.prepend(li);}
-        function handleGuess(){if(isForditoRound){handleForditoGuess();return;}const userGuess=guessInput.value;if(!userGuess.trim()||guessInput.disabled)return;let matchFound=null,normalizedGuess=normalizeText(userGuess);for(const key in currentAnswers){if(isSimilar(userGuess,key)&&!revealedAnswers.includes(key)){matchFound=key;break;}}if(!matchFound){if(synonymMap[normalizedGuess]){for(const synonym of synonymMap[normalizedGuess]){for(const answerKey in currentAnswers){if(isSimilar(synonym,answerKey)&&!revealedAnswers.includes(answerKey)){matchFound=answerKey;break;}}if(matchFound)break;}}if(!matchFound){for(const answerKey in currentAnswers){const normalizedAnswer=normalizeText(answerKey);if(synonymMap[normalizedAnswer]&&synonymMap[normalizedAnswer].includes(normalizedGuess)&&!revealedAnswers.includes(answerKey)){matchFound=answerKey;break;}}}}
-        addGuessToList(userGuess,!!matchFound);if(matchFound){if(roundTimeRemaining>0){const timeBonusPoints=roundTimeRemaining;animatePoints(timeBonusPoints,document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`));roundTimeRemaining+=3;updateRoundTimerDisplay();updateInfoBox(`+${timeBonusPoints} pont! +3mp!`, 'bonus-active');}if(isTimePanicRound)timeRemaining+=5;revealedAnswers.push(matchFound);let pointsAwarded=currentAnswers[matchFound];if(isDoublePointsRound)pointsAwarded*=2;animatePoints(pointsAwarded,document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`));currentStreak++;let isGolden=matchFound===goldenAnswer;if(isGolden){let bonus=100;setTimeout(()=>animatePoints(bonus,document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`)),100);showNotification(`✨ ARANY VÁLASZ! +${bonus} PONT!`);}if(currentStreak>=3&&currentStreak%3===0){let streakBonus=30;if(isDoublePointsRound)streakBonus=60;setTimeout(()=>animatePoints(streakBonus,document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`)),200);showNotification(`SOROZAT BÓNUSZ! +${streakBonus} PONT`);}
-        const card=document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`);if(card){if(isGolden){const cardFront=card.querySelector('.card-front'),originalContent=cardFront.innerHTML,bonus=100;cardFront.innerHTML=`<div class="flash-content">ARANY VÁLASZ<br>+${bonus} PONT</div>`;cardFront.classList.add('golden-flash');setTimeout(()=>{cardFront.classList.remove('golden-flash');cardFront.innerHTML=originalContent;card.classList.add('revealed');card.querySelector('.card-back').classList.add('golden-answer');},1500);}else{card.classList.add('revealed');}}
-        if(revealedAnswers.length===Object.keys(currentAnswers).length){let boardBonus=50;if(isDoublePointsRound)boardBonus=100;setTimeout(()=>animatePoints(boardBonus,document.querySelector(`#score-box`)),300);showNotification(`TÁBLA BÓNUSZ! +${boardBonus} PONT`);setTimeout(()=>endRound(true),isGolden?1600:100);}}else{currentStreak=0;if(isTimePanicRound){timeRemaining=Math.max(0,timeRemaining-10);}else{addStrike();}}if(isTimePanicRound)updateTimerDisplay();guessInput.value='';guessInput.focus();}
-        function handleForditoGuess(){const userGuess=guessInput.value;guessInput.disabled=true;guessButton.disabled=true;if(!userGuess.trim())return;let matchFound=null;for(const key in currentAnswers){if(isSimilar(userGuess,key)){matchFound=key;break;}}addGuessToList(userGuess,!!matchFound);if(matchFound){const points=currentAnswers[matchFound]*10;showNotification(`FORDÍTÓ SIKER! +${points} PONT!`);animatePoints(points,document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`));const card=document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`);if(card)card.classList.add('revealed');}else{const penalty=50;showNotification(`SIKERTELEN FORDÍTÁS! -${penalty} PONT!`);animatePointLoss(penalty);}endRound(false);}
+        
+        function handleGuess(){
+            const userGuess = guessInput.value.trim();
+            // --- MÓDOSÍTÁS: EGYBETŰS TIPP MEGAKADÁLYOZÁSA ---
+            if (userGuess.length <= 1) {
+                if (userGuess.length > 0) { // Csak akkor jelezzen, ha van beírt karakter
+                    guessInput.classList.add('shake');
+                    setTimeout(() => guessInput.classList.remove('shake'), 400);
+                }
+                return; // Ne csináljon semmit, ha a tipp túl rövid
+            }
+
+            if(isForditoRound){handleForditoGuess(userGuess);return;}
+            if(guessInput.disabled) return;
+
+            let matchFound=null,normalizedGuess=normalizeText(userGuess);
+            for(const key in currentAnswers){if(isSimilar(userGuess,key)&&!revealedAnswers.includes(key)){matchFound=key;break;}}
+            if(!matchFound){if(synonymMap[normalizedGuess]){for(const synonym of synonymMap[normalizedGuess]){for(const answerKey in currentAnswers){if(isSimilar(synonym,answerKey)&&!revealedAnswers.includes(answerKey)){matchFound=answerKey;break;}}if(matchFound)break;}}}
+            if(!matchFound){for(const answerKey in currentAnswers){const normalizedAnswer=normalizeText(answerKey);if(synonymMap[normalizedAnswer]&&synonymMap[normalizedAnswer].includes(normalizedGuess)&&!revealedAnswers.includes(answerKey)){matchFound=answerKey;break;}}}
+            
+            addGuessToList(userGuess,!!matchFound);
+            if(matchFound){
+                if(roundTimeRemaining>0){const timeBonusPoints=roundTimeRemaining;animatePoints(timeBonusPoints,document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`));roundTimeRemaining+=3;updateRoundTimerDisplay();updateInfoBox(`+${timeBonusPoints} pont! +3mp!`, 'bonus-active');}
+                if(isTimePanicRound)timeRemaining+=5;
+                revealedAnswers.push(matchFound);
+                let pointsAwarded=currentAnswers[matchFound];
+                if(isDoublePointsRound)pointsAwarded*=2;
+                animatePoints(pointsAwarded,document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`));
+                currentStreak++;
+                let isGolden=matchFound===goldenAnswer;
+                if(isGolden){
+                    let bonus=100;
+                    setTimeout(()=>animatePoints(bonus,document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`)),100);
+                    showNotification(`✨ ARANY VÁLASZ! +${bonus} PONT!`);
+                }
+                if(currentStreak>=3&&currentStreak%3===0){
+                    let streakBonus=30;if(isDoublePointsRound)streakBonus=60;
+                    setTimeout(()=>animatePoints(streakBonus,document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`)),200);
+                    showNotification(`SOROZAT BÓNUSZ! +${streakBonus} PONT`);
+                }
+                const card=document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`);
+                if(card){
+                    if(isGolden){
+                        const cardFront=card.querySelector('.card-front'),originalContent=cardFront.innerHTML,bonus=100;
+                        cardFront.innerHTML=`<div class="flash-content">ARANY VÁLASZ<br>+${bonus} PONT</div>`;
+                        cardFront.classList.add('golden-flash');
+                        setTimeout(()=>{cardFront.classList.remove('golden-flash');cardFront.innerHTML=originalContent;card.classList.add('revealed');card.querySelector('.card-back').classList.add('golden-answer');},1500);
+                    }else{
+                        card.classList.add('revealed');
+                    }
+                }
+                if(revealedAnswers.length===Object.keys(currentAnswers).length){
+                    let boardBonus=50;if(isDoublePointsRound)boardBonus=100;
+                    setTimeout(()=>animatePoints(boardBonus,document.querySelector(`#score-box`)),300);
+                    showNotification(`TÁBLA BÓNUSZ! +${boardBonus} PONT`);
+                    setTimeout(()=>endRound(true),isGolden?1600:100);
+                }
+            }else{
+                currentStreak=0;
+                if(isTimePanicRound){
+                    timeRemaining=Math.max(0,timeRemaining-10);
+                }else{
+                    addStrike();
+                }
+            }
+            if(isTimePanicRound)updateTimerDisplay();
+            guessInput.value='';
+            guessInput.focus();
+        }
+
+        function handleForditoGuess(userGuess){
+            guessInput.disabled=true;guessButton.disabled=true;
+            if(!userGuess)return;
+            let matchFound=null;for(const key in currentAnswers){if(isSimilar(userGuess,key)){matchFound=key;break;}}
+            addGuessToList(userGuess,!!matchFound);
+            if(matchFound){const points=currentAnswers[matchFound]*10;showNotification(`FORDÍTÓ SIKER! +${points} PONT!`);animatePoints(points,document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`));const card=document.querySelector(`.answer-card[data-answer-key="${matchFound}"]`);if(card)card.classList.add('revealed');
+            }else{const penalty=50;showNotification(`SIKERTELEN FORDÍTÁS! -${penalty} PONT!`);animatePointLoss(penalty);}
+            endRound(false);
+        }
         function addStrike(){if(isTimePanicRound||isForditoRound)return;if(currentStrikes<3){strikes[currentStrikes].classList.add('visible');currentStrikes++;if(currentStrikes===3){strikesContainer.classList.add('shake');setTimeout(()=>{strikesContainer.classList.remove('shake');},600);endRound(false);}}}
         function endRound(isBoardCleared){clearInterval(timePanicTimer);clearInterval(roundTimer);guessInput.disabled=true;guessButton.disabled=true;nextRoundButton.classList.remove('hidden');if(!isBoardCleared&&!isForditoRound){const revealButton=document.createElement('button');revealButton.id='reveal-button';revealButton.textContent='Válaszok Felfedése';revealButton.classList.add('game-button');revealButton.onclick=revealAllAnswers;buttonContainer.insertBefore(revealButton,nextRoundButton);}else if(isForditoRound){setTimeout(revealAllAnswers,1500);}if(currentQuestionIndex>=currentQuestions.length-1){nextRoundButton.textContent="FŐDÍJ JÁTÉK";}}
         function revealAllAnswers(){document.querySelectorAll('.answer-card').forEach(card=>{const key=card.dataset.answerKey;if(!card.classList.contains('revealed')){if(key===goldenAnswer)card.querySelector('.card-back').classList.add('golden-answer');card.classList.add('revealed','missed-answer');}});const revealBtn=document.getElementById('reveal-button');if(revealBtn)revealBtn.remove();}
-        function startGrandPrizeGame(){bodyEl.classList.add('centering');mainWrapper.classList.add('hidden');startContainer.classList.add('hidden');grandPrizeContainer.classList.remove('hidden');playerAnswers=[];currentGPQuestionIndex=0;grandPrizeQuestions=[...grandPrizeQuizData];shuffleArray(grandPrizeQuestions,Math.random);displayGPQuestion();let timeRemaining=400;gpTimerEl.textContent="40.0";grandPrizeTimer=setInterval(()=>{timeRemaining--;const seconds=Math.floor(timeRemaining/10);const tenths=timeRemaining%10;gpTimerEl.textContent=`${seconds}.${tenths}`;if(timeRemaining<=0){showEvaluation();}},100);}
-        function displayGPQuestion(){const questionData=grandPrizeQuestions[currentGPQuestionIndex];gpQuestionTextEl.textContent=questionData.question;gpOptionsAreaEl.innerHTML='';questionData.options.forEach((option,index)=>{const button=document.createElement('button');button.textContent=option;button.className='gp-option-btn';button.onclick=()=>selectGPAnswer(index);gpOptionsAreaEl.appendChild(button);});gpProgressFillEl.style.width=`${(currentGPQuestionIndex/grandPrizeQuestions.length)*100}%`;}
-        function selectGPAnswer(selectedIndex){playerAnswers[currentGPQuestionIndex]=selectedIndex;document.querySelectorAll('.gp-option-btn').forEach((btn,index)=>{if(index===selectedIndex)btn.classList.add('selected');btn.disabled=true;});setTimeout(()=>{currentGPQuestionIndex++;if(currentGPQuestionIndex<grandPrizeQuestions.length){displayGPQuestion();}else{showEvaluation();}},300);}
-        function showEvaluation(){clearInterval(grandPrizeTimer);grandPrizeContainer.classList.add('hidden');evaluationContainer.classList.remove('hidden');let correctCount=0;evalListEl.innerHTML='';for(let i=0;i<grandPrizeQuestions.length;i++){const questionData=grandPrizeQuestions[i];const playerAnswerIndex=playerAnswers[i];const correctAnswerIndex=questionData.correctAnswer;const isCorrect=playerAnswerIndex===correctAnswerIndex;if(isCorrect)correctCount++;const li=document.createElement('li');li.className='eval-item';li.innerHTML=`<div class="eval-question">${i+1}. ${questionData.question}</div><div class="eval-answer ${isCorrect?'correct':'incorrect'}">Tipped: ${playerAnswerIndex!==undefined?questionData.options[playerAnswerIndex]:'Nem válaszolt'}</div>${!isCorrect?`<div class="eval-answer correct">Helyes válasz: ${questionData.options[correctAnswerIndex]}</div>`:''}`;evalListEl.appendChild(li);}let summaryText="";if(correctCount===10){summaryText=`TÖKÉLETES! 10/10! A pontjaid megduplázódnak!`;dailyScore*=2;}else if(correctCount>=8){summaryText=`KIVÁLÓ! ${correctCount}/10! +200 bónuszpont!`;dailyScore+=200;}else if(correctCount>=6){summaryText=`SZÉP MUNKA! ${correctCount}/10! +100 bónuszpont!`;dailyScore+=100;}else{summaryText=`SAJNOS NEM SIKERÜLT! ${correctCount}/10! A napi pontjaid lenullázódnak.`;dailyScore=0;}evalSummaryEl.textContent=summaryText;score=dailyScore;updateScoreDisplay();saveDailyScore();}
+        
+        // --- MÓDOSÍTOTT FŐDÍJ JÁTÉK (10 KÉRDÉSES VERZIÓ) ---
+        function startGrandPrizeGame(){
+            bodyEl.classList.add('centering');
+            mainWrapper.classList.add('hidden');
+            startContainer.classList.add('hidden');
+            grandPrizeContainer.classList.remove('hidden');
+            
+            finalPlayerAnswers.clear();
+            incorrectGPQuestions = [];
+            
+            let allQuestions = [...grandPrizeQuizData];
+            shuffleArray(allQuestions, Math.random);
+            gpQuestions = allQuestions.slice(0, 10); // 10 kérdést választunk ki
+
+            nextGPQuestion();
+
+            let timeRemaining = 500; // 50.0 seconds
+            gpTimerEl.textContent="50.0";
+            grandPrizeTimer = setInterval(() => {
+                timeRemaining--;
+                const seconds = Math.floor(timeRemaining / 10);
+                const tenths = timeRemaining % 10;
+                gpTimerEl.textContent = `${seconds}.${tenths}`;
+                if (timeRemaining <= 0) {
+                    showEvaluation();
+                }
+            }, 100);
+        }
+
+        function nextGPQuestion() {
+            if (gpQuestions.length === 0) {
+                if (incorrectGPQuestions.length === 0) {
+                    showEvaluation(); // Mindenre helyesen válaszolt
+                    return;
+                }
+                gpQuestions = incorrectGPQuestions;
+                incorrectGPQuestions = [];
+                shuffleArray(gpQuestions, Math.random);
+            }
+
+            const questionData = gpQuestions.shift();
+            displayGPQuestion(questionData);
+        }
+
+        function displayGPQuestion(questionData){
+            gpQuestionTextEl.textContent = questionData.question;
+            gpOptionsAreaEl.innerHTML = '';
+            questionData.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'gp-option-btn';
+                button.onclick = () => selectGPAnswer(index, questionData, button);
+                gpOptionsAreaEl.appendChild(button);
+            });
+            const answeredCount = finalPlayerAnswers.size;
+            gpProgressFillEl.style.width = `${(answeredCount / 10) * 100}%`; // 10 kérdéshez igazítva
+        }
+        
+        function selectGPAnswer(selectedIndex, questionData, selectedButton) {
+            document.querySelectorAll('.gp-option-btn').forEach(btn => btn.disabled = true);
+            
+            const isCorrect = selectedIndex === questionData.correctAnswer;
+
+            if (!finalPlayerAnswers.has(questionData.question)) {
+                finalPlayerAnswers.set(questionData.question, {
+                    questionData: questionData,
+                    playerAnswerIndex: selectedIndex
+                });
+            }
+
+            if (isCorrect) {
+                selectedButton.style.backgroundColor = 'var(--correct-green)';
+                selectedButton.style.color = 'var(--board-bg)';
+                setTimeout(nextGPQuestion, 300);
+            } else {
+                selectedButton.style.backgroundColor = 'var(--strike-red)';
+                selectedButton.style.color = 'white';
+                incorrectGPQuestions.push(questionData);
+                setTimeout(nextGPQuestion, 500);
+            }
+        }
+
+        function showEvaluation(){
+            clearInterval(grandPrizeTimer);
+            grandPrizeContainer.classList.add('hidden');
+            evaluationContainer.classList.remove('hidden');
+            
+            let correctCount = 0;
+            finalPlayerAnswers.forEach(answer => {
+                if (answer.playerAnswerIndex === answer.questionData.correctAnswer) {
+                    correctCount++;
+                }
+            });
+
+            evalListEl.innerHTML = '';
+            finalPlayerAnswers.forEach(answer => {
+                const { questionData, playerAnswerIndex } = answer;
+                const isCorrect = playerAnswerIndex === questionData.correctAnswer;
+                
+                const li = document.createElement('li');
+                li.className = 'eval-item';
+                li.innerHTML = `
+                    <div class="eval-question">${questionData.question}</div>
+                    <div class="eval-answer ${isCorrect ? 'correct' : 'incorrect'}">
+                        Tipped: ${playerAnswerIndex !== undefined ? questionData.options[playerAnswerIndex] : 'Nem válaszolt'}
+                    </div>
+                    ${!isCorrect ? `<div class="eval-answer correct">Helyes válasz: ${questionData.options[questionData.correctAnswer]}</div>` : ''}
+                `;
+                evalListEl.appendChild(li);
+            });
+
+            let summaryText = "";
+            // Pontozás a 10 kérdéses rendszerhez igazítva
+            if (correctCount === 10) {
+                summaryText = `BAJNOK! 10/10! A pontjaid megduplázódnak és +500 bónuszpontot kapsz!`;
+                dailyScore = dailyScore * 2 + 500;
+            } else if (correctCount >= 9) { // 9 helyes válasz
+                summaryText = `KIVÁLÓ! ${correctCount}/10! A pontszámod másfélszeresére nő és +200 bónuszpontot kapsz!`;
+                dailyScore = Math.round(dailyScore * 1.5) + 200;
+            } else if (correctCount >= 7) { // 7-8 helyes válasz
+                summaryText = `SZÉP MUNKA! ${correctCount}/10! +500 bónuszpont!`;
+                dailyScore += 500;
+            } else if (correctCount >= 5) { // 5-6 helyes válasz
+                summaryText = `NEM ROSSZ! ${correctCount}/10! +250 bónuszpont!`;
+                dailyScore += 250;
+            } else { // 4 vagy kevesebb helyes válasz
+                summaryText = `SAJNOS NEM SIKERÜLT! ${correctCount}/10! A napi pontjaid lenullázódnak.`;
+                dailyScore = 0;
+            }
+            
+            evalSummaryEl.textContent = summaryText;
+            score = dailyScore;
+            updateScoreDisplay();
+            saveDailyScore();
+        }
         
         document.getElementById('start-challenge-button').addEventListener('click',startGame);
         guessButton.addEventListener('click',handleGuess);
